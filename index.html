@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Empório - Pedidos e Entregas</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Arial,sans-serif;background:#f3f0ea;color:#24211d}
+    .wrap{max-width:1120px;margin:0 auto;padding:16px}
+    header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+    h1{margin:0;font-size:24px} h2{margin-top:0}
+    .sub,.muted{color:#777;font-size:13px}.brand{background:#24211d;color:#fff;padding:10px 16px;border-radius:18px;font-weight:bold}
+    .card{background:#fff;border-radius:24px;padding:16px;box-shadow:0 2px 8px rgba(0,0,0,.06);margin-bottom:16px}
+    .grid2{display:grid;grid-template-columns:1.15fr .85fr;gap:16px}
+    .row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+    label{display:block;font-size:13px;font-weight:bold;margin-bottom:6px}
+    input,select{width:100%;border:1px solid #ddd6cc;border-radius:16px;padding:13px;font-size:16px;outline:none;background:#faf8f4}
+    input:focus,select:focus{border-color:#5c5145;background:#fff}
+    .field{margin-bottom:12px}
+    .item{background:#faf8f4;border:1px solid #e1dbd2;border-radius:22px;padding:14px;margin-bottom:12px}
+    .item-title{display:flex;justify-content:space-between;align-items:center;font-weight:bold;margin-bottom:10px}
+    .item-grid{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px}
+    .full{grid-column:1/-1}.half2{grid-column:span 2}
+    .calc{background:#fff;border-radius:16px;padding:12px;font-size:14px;color:#555}
+    .calc strong{display:block;font-size:16px;color:#222;margin-top:4px}
+    button{border:0;border-radius:16px;padding:13px 16px;font-size:15px;font-weight:bold;cursor:pointer}
+    .btn-add{width:100%;background:#eee8de;color:#24211d;margin:6px 0 14px}
+    .btn-save{background:#fff;color:#24211d}.btn-del{background:transparent;color:#b42318;padding:6px 8px}
+    .btn-dark{background:#24211d;color:white}.btn-light{background:#eee8de;color:#24211d}.btn-red{background:#fee4e2;color:#b42318}
+    .total{background:#24211d;color:#fff;border-radius:22px;padding:16px;display:flex;justify-content:space-between;align-items:center;gap:12px}
+    .total small{color:#d6d0c6}.total strong{font-size:25px;display:block;margin-top:3px}
+    .day{border:1px solid #e1dbd2;border-radius:22px;padding:14px;margin-bottom:12px}
+    .day-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+    .day h3{margin:0;font-size:15px;text-transform:uppercase}.count{background:#f0ece5;border-radius:999px;padding:4px 9px;font-size:12px;font-weight:bold}
+    .delivery{display:block;width:100%;text-align:left;background:#f0ece5;margin:6px 0;color:#24211d}
+    .delivery.done{background:#e7f7e9;color:#166534;text-decoration:line-through}
+    .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.stat{background:#faf8f4;border:1px solid #e1dbd2;border-radius:18px;padding:14px}.stat small{color:#777}.stat strong{display:block;font-size:20px;margin-top:4px}
+    .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;padding:16px;z-index:10}
+    .modal{background:white;border-radius:24px;padding:18px;width:100%;max-width:620px;max-height:90vh;overflow:auto}
+    .modal-head{display:flex;justify-content:space-between;align-items:center;gap:10px}.pill{display:inline-block;background:#f0ece5;padding:6px 10px;border-radius:999px;font-size:12px;font-weight:bold}
+    .detail-item{background:#faf8f4;border:1px solid #e1dbd2;border-radius:18px;padding:12px;margin:8px 0}
+    .actions4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;margin-top:12px}
+
+    .mes-field{max-width:280px;background:#24211d;color:white;padding:12px;border-radius:18px}
+    .mes-field label{color:white;font-size:14px}
+    .mes-field input{background:white;color:#24211d;border:2px solid #24211d;font-weight:bold}
+    .materiais-lista{margin-top:16px;border-top:1px solid #e1dbd2;padding-top:14px}
+    .material-row{display:flex;justify-content:space-between;gap:12px;background:#faf8f4;border:1px solid #e1dbd2;border-radius:16px;padding:12px;margin-bottom:8px}
+    .material-row strong{font-size:15px}
+    .material-row span{font-weight:bold}
+
+    @media(max-width:850px){.grid2,.row{grid-template-columns:1fr}.item-grid{grid-template-columns:1fr 1fr}.stats{grid-template-columns:1fr 1fr}.actions4{grid-template-columns:1fr}.brand{font-size:13px}.total{display:block}.btn-save{width:100%;margin-top:10px}}
+  </style>
+</head>
+<body>
+<div class="wrap">
+<header><div><h1>Pedidos e Entregas</h1><div class="sub">Sistema Empório para chapas, frete, PDF e faturamento</div></div><div class="brand">Empório</div></header>
+
+<section class="card">
+  <h2 id="formTitulo">Novo pedido</h2>
+  <input type="hidden" id="editandoId" />
+  <div class="row">
+    <div><label>Nome do cliente</label><input id="cliente" placeholder=""></div>
+    <div><label>Dia da entrega</label><select id="diaEntrega"><option>A definir</option><option>Segunda</option><option>Terça</option><option>Quarta</option><option>Quinta</option><option>Sexta</option></select></div>
+  </div>
+  <div class="field"><label>Observação</label><input id="observacao" placeholder=""></div>
+  <div id="itens"></div>
+  <button class="btn-add" onclick="adicionarChapa()">+ Adicionar chapa</button>
+  <div class="field" style="max-width:260px"><label>Frete do pedido</label><input id="fretePedido" inputmode="decimal" placeholder="" oninput="calcular()"></div>
+  <div class="total"><div><small>Subtotal chapas</small><strong id="subtotalPedido">R$ 0,00</strong><small>Total com frete</small><strong id="totalPedido">R$ 0,00</strong></div><button class="btn-save" onclick="salvarPedido()" id="btnSalvar">Salvar pedido</button></div>
+  <button class="btn-light" style="width:100%;margin-top:10px;display:none" id="btnCancelarEdicao" onclick="limparFormulario()">Cancelar edição</button>
+</section>
+
+<section class="card">
+  <h2>Entregas da semana</h2>
+  <div id="entregas" class="grid2"></div>
+  <p class="muted">Pedidos entregues saem daqui e vão para o histórico.</p>
+</section>
+
+<section class="card">
+  <h2>Histórico de entregues</h2>
+  <div id="historico"></div>
+</section>
+
+<section class="card">
+  <h2>Dashboard financeiro do mês</h2>
+  <div class="field mes-field"><label>Mês do resumo</label><input type="month" id="mesDash" onchange="renderDashboard()"></div>
+  <div class="stats">
+    <div class="stat"><small>Faturamento</small><strong id="fatTotal">R$ 0,00</strong></div>
+    <div class="stat"><small>Chapas</small><strong id="fatChapas">R$ 0,00</strong></div>
+    <div class="stat"><small>Fretes</small><strong id="fatFretes">R$ 0,00</strong></div>
+    <div class="stat"><small>Ticket médio</small><strong id="ticketMedio">R$ 0,00</strong></div>
+    <div class="stat"><small>Pedidos</small><strong id="qtdPedidos">0</strong></div>
+    <div class="stat"><small>Entregues</small><strong id="qtdEntregues">0</strong></div>
+    <div class="stat"><small>Pendentes</small><strong id="qtdPendentes">0</strong></div>
+    <div class="stat"><small>m² vendidos</small><strong id="m2Vendidos">0,00</strong></div>
+    <div class="stat"><small>Chapas vendidas</small><strong id="chapasVendidas">0</strong></div>
+  </div>
+  <div class="materiais-lista"><h3>Materiais vendidos no mês</h3><div id="materiaisVendidos"><p class="muted">Nenhum material vendido neste mês.</p></div></div>
+</section>
+</div>
+
+<div class="modal-bg" id="modalBg"><div class="modal">
+  <div class="modal-head"><div><h2 id="modalCliente" style="margin-bottom:6px">Cliente</h2><span class="pill" id="modalNumero"></span> <span class="pill" id="modalDia"></span> <span class="pill" id="modalStatus"></span></div><button class="btn-light" onclick="fecharModal()">Fechar</button></div>
+  <p id="modalObs" class="muted"></p><div id="modalItens"></div><h3 id="modalTotal"></h3>
+  <div class="field"><label>Trocar dia da entrega</label><select id="modalTrocarDia"><option>A definir</option><option>Segunda</option><option>Terça</option><option>Quarta</option><option>Quinta</option><option>Sexta</option></select></div>
+  <div class="actions4"><button class="btn-dark" onclick="marcarEntregueModal()">Entregue / voltar</button><button class="btn-light" onclick="editarPedidoModal()">Editar</button><button class="btn-light" onclick="baixarPDFModal()">Baixar PDF</button><button class="btn-red" onclick="excluirPedidoModal()">Excluir</button></div>
+</div></div>
+
+<script>
+const dias=["A definir","Segunda","Terça","Quarta","Quinta","Sexta"];
+let itemId=1,pedidoAbertoId=null;
+let pedidos=JSON.parse(localStorage.getItem("pedidos_marmoraria_v10")||"[]");
+function salvarLocal(){localStorage.setItem("pedidos_marmoraria_v10",JSON.stringify(pedidos))}
+function moeda(v){return (Number(v)||0).toLocaleString("pt-BR",{style:"currency",currency:"BRL"})}
+function numero(v){return Number(String(v||"").replace(",","."))||0}
+function proxNumero(){let n=Number(localStorage.getItem("pedido_numero_seq")||"0")+1;localStorage.setItem("pedido_numero_seq",n);return String(n).padStart(4,"0")}
+function dataISO(){return new Date().toISOString().slice(0,10)}
+function mesAtual(){return new Date().toISOString().slice(0,7)}
+
+function criarItem(id,dados={}){
+ const div=document.createElement("div");div.className="item";div.dataset.id=id;
+ div.innerHTML=`<div class="item-title"><span>Chapa</span><button class="btn-del" type="button" onclick="removerChapa(${id})">Remover</button></div>
+ <div class="item-grid">
+  <div class="full"><label>Nome da chapa</label><input class="chapa" placeholder="" oninput="calcular()"></div>
+  <div><label>Quantidade</label><input class="quantidade" inputmode="numeric" placeholder="" oninput="calcular()"></div>
+  <div><label>Valor m²</label><input class="valorM2" inputmode="decimal" placeholder="" oninput="calcular()"></div>
+  <div><label>Largura</label><input class="largura" inputmode="decimal" placeholder="" oninput="calcular()"></div>
+  <div><label>Altura</label><input class="altura" inputmode="decimal" placeholder="" oninput="calcular()"></div>
+  <div class="calc full">m² total: <strong class="m2">0,00 m²</strong>Total das chapas: <strong class="totalItem">R$ 0,00</strong></div>
+ </div>`;
+ document.getElementById("itens").appendChild(div);
+ div.querySelector(".chapa").value=dados.chapa||"";
+ div.querySelector(".quantidade").value=dados.quantidade||"1";
+ div.querySelector(".largura").value=dados.largura?String(dados.largura).replace(".",","):"";
+ div.querySelector(".altura").value=dados.altura?String(dados.altura).replace(".",","):"";
+ div.querySelector(".valorM2").value=dados.valorM2?String(dados.valorM2).replace(".",","):"";
+ calcular();
+}
+function adicionarChapa(){criarItem(itemId++)}
+function removerChapa(id){if(document.querySelectorAll(".item").length<=1)return;document.querySelector(`.item[data-id="${id}"]`)?.remove();calcular()}
+function calcular(){
+ let subtotal=0;
+ document.querySelectorAll(".item").forEach(item=>{
+  const qtd=numero(item.querySelector(".quantidade").value)||1,larg=numero(item.querySelector(".largura").value),alt=numero(item.querySelector(".altura").value),valor=numero(item.querySelector(".valorM2").value);
+  const m2=qtd*larg*alt,total=m2*valor; subtotal+=total;
+  item.querySelector(".m2").textContent=m2.toFixed(2).replace(".",",")+" m²";
+  item.querySelector(".totalItem").textContent=moeda(total);
+ });
+ const frete=numero(document.getElementById("fretePedido")?.value);
+ document.getElementById("subtotalPedido").textContent=moeda(subtotal);
+ document.getElementById("totalPedido").textContent=moeda(subtotal+frete);
+}
+function coletarItens(){
+ return [...document.querySelectorAll(".item")].map(item=>{
+  const quantidade=numero(item.querySelector(".quantidade").value)||1,largura=numero(item.querySelector(".largura").value),altura=numero(item.querySelector(".altura").value),valorM2=numero(item.querySelector(".valorM2").value);
+  const m2=quantidade*largura*altura,total=m2*valorM2;
+  return {chapa:item.querySelector(".chapa").value.trim(),quantidade,largura,altura,valorM2,m2,total};
+ });
+}
+function salvarPedido(){
+ const cliente=document.getElementById("cliente").value.trim(); if(!cliente){alert("Digite o nome do cliente.");return}
+ const itens=coletarItens(),subtotal=itens.reduce((s,i)=>s+i.total,0),frete=numero(document.getElementById("fretePedido").value),total=subtotal+frete,editandoId=Number(document.getElementById("editandoId").value);
+ if(editandoId){pedidos=pedidos.map(p=>p.id===editandoId?{...p,cliente,dia:diaEntrega.value,observacao:observacao.value,itens,subtotal,frete,total}:p)}
+ else{pedidos.unshift({id:Date.now(),numero:proxNumero(),cliente,dia:diaEntrega.value,observacao:observacao.value,itens,subtotal,frete,total,entregue:false,data:dataISO()})}
+ salvarLocal(); limparFormulario(); renderTudo();
+}
+function limparFormulario(){editandoId.value="";formTitulo.textContent="Novo pedido";btnSalvar.textContent="Salvar pedido";btnCancelarEdicao.style.display="none";cliente.value="";observacao.value="";diaEntrega.value="A definir";fretePedido.value="";itens.innerHTML="";criarItem(itemId++)}
+function abrirModal(id){
+ pedidoAbertoId=id; const p=pedidos.find(x=>x.id===id); if(!p)return;
+ modalCliente.textContent=p.cliente;modalNumero.textContent="Pedido nº "+(p.numero||p.id);modalDia.textContent=p.dia;modalStatus.textContent=p.entregue?"Entregue":"Pendente";modalObs.textContent=p.observacao?"Obs: "+p.observacao:"";modalTrocarDia.value=p.dia;
+ modalItens.innerHTML=(p.itens||[]).map((i,idx)=>`<div class="detail-item"><strong>${i.chapa||"Sem nome"}</strong><br>Qtd: ${i.quantidade||1} | Medida: ${String(i.largura).replace(".",",")} x ${String(i.altura).replace(".",",")} = ${Number(i.m2||0).toFixed(2).replace(".",",")} m²<br>Valor m²: ${moeda(i.valorM2)}<br>Total: <strong>${moeda(i.total||0)}</strong></div>`).join("");
+ modalTotal.textContent="Subtotal: "+moeda(p.subtotal||0)+" | Frete: "+moeda(p.frete||0)+" | Total: "+moeda(p.total||0);modalBg.style.display="flex";
+}
+function fecharModal(){modalBg.style.display="none";pedidoAbertoId=null}
+modalTrocarDia.addEventListener("change",function(){if(!pedidoAbertoId)return;pedidos=pedidos.map(p=>p.id===pedidoAbertoId?{...p,dia:this.value}:p);salvarLocal();renderTudo();abrirModal(pedidoAbertoId)})
+function marcarEntregueModal(){if(!pedidoAbertoId)return;pedidos=pedidos.map(p=>p.id===pedidoAbertoId?{...p,entregue:!p.entregue,dataEntrega:p.entregue?"":dataISO()}:p);salvarLocal();renderTudo();abrirModal(pedidoAbertoId)}
+function editarPedidoModal(){const p=pedidos.find(x=>x.id===pedidoAbertoId);if(!p)return;fecharModal();editandoId.value=p.id;formTitulo.textContent="Editando pedido";btnSalvar.textContent="Salvar alteração";btnCancelarEdicao.style.display="block";cliente.value=p.cliente;observacao.value=p.observacao||"";diaEntrega.value=p.dia;fretePedido.value=p.frete?String(p.frete).replace(".",","):"";itens.innerHTML="";p.itens.forEach(i=>criarItem(itemId++,i));scrollTo({top:0,behavior:"smooth"})}
+function excluirPedidoModal(){if(!pedidoAbertoId)return;if(!confirm("Excluir este pedido?"))return;pedidos=pedidos.filter(p=>p.id!==pedidoAbertoId);salvarLocal();fecharModal();renderTudo()}
+
+function renderEntregas(){
+ entregas.innerHTML=""; dias.forEach(dia=>{const arr=pedidos.filter(p=>p.dia===dia&&!p.entregue);const box=document.createElement("div");box.className="day";box.innerHTML=`<div class="day-head"><h3>${dia}</h3><span class="count">${arr.length}</span></div>`;if(!arr.length)box.innerHTML+=`<p class="muted">Sem entregas</p>`;arr.forEach(p=>{box.innerHTML+=`<button class="delivery" onclick="abrirModal(${p.id})">#${p.numero||p.id} - ${p.cliente} - ${moeda(p.total)}</button>`});entregas.appendChild(box)})
+}
+function renderHistorico(){const arr=pedidos.filter(p=>p.entregue);historico.innerHTML=arr.length?arr.map(p=>`<button class="delivery done" onclick="abrirModal(${p.id})">#${p.numero||p.id} - ${p.cliente} - ${moeda(p.total)}</button>`).join(""):`<p class="muted">Nenhum pedido entregue ainda.</p>`}
+function renderDashboard(){
+ const mes=mesDash.value||mesAtual();mesDash.value=mes;const arr=pedidos.filter(p=>(p.data||"").slice(0,7)===mes);const total=arr.reduce((s,p)=>s+(p.total||0),0),chapas=arr.reduce((s,p)=>s+(p.subtotal||0),0),fretes=arr.reduce((s,p)=>s+(p.frete||0),0),m2=arr.flatMap(p=>p.itens||[]).reduce((s,i)=>s+(i.m2||0),0);
+ const qtdChapas=arr.flatMap(p=>p.itens||[]).reduce((s,i)=>s+(Number(i.quantidade)||0),0);
+ const materiais={};
+ arr.flatMap(p=>p.itens||[]).forEach(i=>{
+  const nome=(i.chapa||"Sem nome da chapa").trim();
+  materiais[nome]=(materiais[nome]||0)+(Number(i.quantidade)||0);
+ });
+ const lista=Object.entries(materiais).sort((a,b)=>b[1]-a[1]);
+ materiaisVendidos.innerHTML=lista.length?lista.map(([nome,qtd])=>`<div class="material-row"><strong>${nome}</strong><span>${qtd} chapa${qtd==1?"":"s"}</span></div>`).join(""):`<p class="muted">Nenhum material vendido neste mês.</p>`;
+ fatTotal.textContent=moeda(total);fatChapas.textContent=moeda(chapas);fatFretes.textContent=moeda(fretes);ticketMedio.textContent=moeda(arr.length?total/arr.length:0);qtdPedidos.textContent=arr.length;qtdEntregues.textContent=arr.filter(p=>p.entregue).length;qtdPendentes.textContent=arr.filter(p=>!p.entregue).length;m2Vendidos.textContent=m2.toFixed(2).replace(".",",");chapasVendidas.textContent=qtdChapas;
+}
+function renderTudo(){renderEntregas();renderHistorico();renderDashboard()}
+
+function baixarPDFModal(){
+ const p=pedidos.find(x=>x.id===pedidoAbertoId); if(!p)return;
+ const {jsPDF}=window.jspdf; const doc=new jsPDF(); let y=15;
+ function header(){doc.setFont("helvetica","bold");doc.setFontSize(16);doc.text("Empório - Pedido de Venda",15,12);doc.setFontSize(10);doc.setFont("helvetica","normal");doc.text("Pedido nº "+(p.numero||p.id)+" | Cliente: "+p.cliente+" | Entrega: "+p.dia,15,20);y=30;doc.setFont("helvetica","bold");doc.text("Chapa",15,y);doc.text("Qtd",80,y);doc.text("Medida",96,y);doc.text("m²",128,y);doc.text("Vlr m²",148,y);doc.text("Total",178,y);y+=5;doc.line(15,y,200,y);y+=7;doc.setFont("helvetica","normal")}
+ header();
+ (p.itens||[]).forEach((i,idx)=>{if(y>270){doc.addPage();header()} const nome=(i.chapa||"Sem nome");doc.text(nome.slice(0,30),15,y);doc.text(String(i.quantidade||1),82,y);doc.text(`${i.largura}x${i.altura}`,96,y);doc.text(Number(i.m2||0).toFixed(2),128,y);doc.text(moeda(i.valorM2).replace("R$",""),148,y);doc.text(moeda(i.total||0).replace("R$",""),178,y);y+=8});
+ if(y>245){doc.addPage();header()}
+ y+=4;doc.line(120,y,200,y);y+=8;doc.setFont("helvetica","bold");doc.text("Subtotal chapas: "+moeda(p.subtotal||0),120,y);y+=7;doc.text("Frete: "+moeda(p.frete||0),120,y);y+=7;doc.text("Total geral: "+moeda(p.total||0),120,y);y+=18;doc.setFont("helvetica","normal");doc.text("Assinatura / conferência: _______________________________",15,y);
+ doc.save("pedido-"+(p.numero||p.id)+"-"+p.cliente.toLowerCase().replace(/[^a-z0-9]+/gi,"-")+".pdf");
+}
+mesDash.value=mesAtual();limparFormulario();renderTudo();
+</script>
+</body></html>
