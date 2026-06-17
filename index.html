@@ -51,7 +51,7 @@
     .material-row strong{font-size:15px}.material-row span{font-weight:bold}
     .historico-top{display:flex;gap:10px;align-items:end;flex-wrap:wrap;margin-bottom:12px}
     .historico-top .field{margin-bottom:0;min-width:210px;max-width:260px}
-    .historico-resumo{background:#faf8f4;border:1px solid #e1dbd2;border-radius:18px;padding:14px;margin-bottom:10px}
+    .historico-resumo{background:#faf8f4;border:1px solid #e1dbd2;border-radius:18px;padding:14px;margin-bottom:10px}.historico-card{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;background:#f0ece5;border-radius:18px;padding:8px;margin:6px 0}.historico-card.impresso{background:#e7f7e9}.historico-card .delivery{margin:0;text-decoration:none}.romaneio-status{display:inline-block;border-radius:999px;padding:4px 8px;font-size:12px;font-weight:bold;margin-left:6px;background:#fff3cd;color:#8a5a00}.romaneio-status.impresso{background:#d1fadf;color:#166534}.btn-romaneio{background:#fff;color:#24211d;border:1px solid #e1dbd2;padding:10px 12px;font-size:13px;white-space:nowrap}
     .previo-form{background:#faf8f4;border:1px solid #e1dbd2;border-radius:22px;padding:14px;margin-bottom:14px}
     .previo-row{display:grid;grid-template-columns:1.2fr 1.2fr .6fr;gap:10px;margin-bottom:10px}
     .previo-item{background:white;border:1px solid #e1dbd2;border-radius:18px;padding:12px;margin-bottom:10px}
@@ -78,7 +78,7 @@
     .desktop-tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
     .desktop-tabs .tab-btn{border-radius:16px;background:#eee8de;color:#24211d;padding:12px 16px;font-size:14px}
     .desktop-tabs .tab-btn.active{background:#24211d;color:white}
-    @media(max-width:850px){body{padding-bottom:76px}.grid2,.row{grid-template-columns:1fr}.item-grid{grid-template-columns:1fr 1fr}.stats{grid-template-columns:1fr 1fr}.actions4{grid-template-columns:1fr}.brand{font-size:13px}.total{display:block}.btn-save{width:100%;margin-top:10px}.historico-top{display:block}.historico-top .field{max-width:100%;margin-bottom:10px}.historico-top button{width:100%;margin-bottom:10px}.desktop-tabs{display:none}.tabs-bottom{display:grid}.previo-row,.previo-item-grid{grid-template-columns:1fr}.previo-card .previo-actions button{width:100%}}
+    @media(max-width:850px){body{padding-bottom:76px}.grid2,.row{grid-template-columns:1fr}.item-grid{grid-template-columns:1fr 1fr}.item-grid .mobile-full{grid-column:1/-1}.stats{grid-template-columns:1fr 1fr}.actions4{grid-template-columns:1fr}.brand{font-size:13px}.total{display:block}.btn-save{width:100%;margin-top:10px}.historico-top{display:block}.historico-top .field{max-width:100%;margin-bottom:10px}.historico-top button{width:100%;margin-bottom:10px}.historico-card{grid-template-columns:1fr}.historico-card .btn-romaneio{width:100%}.desktop-tabs{display:none}.tabs-bottom{display:grid}.previo-row,.previo-item-grid{grid-template-columns:1fr}.previo-card .previo-actions button{width:100%}}
   </style>
 </head>
 <body>
@@ -127,10 +127,7 @@
   <h2>⚡ Pedido prévio</h2>
   <p class="muted">Para lançar rápido quando ainda não sabe medidas, valor ou frete. Não entra no faturamento até completar.</p>
   <div class="previo-form">
-    <div class="row">
-      <div><label>Cliente</label><input id="previoCliente" list="listaClientes" placeholder="Digite parte do nome"></div>
-      <div><label>WhatsApp / telefone (opcional)</label><input id="previoWhats" inputmode="tel" placeholder=""></div>
-    </div>
+    <div class="field"><label>Cliente</label><input id="previoCliente" list="listaClientes" placeholder="Digite parte do nome"></div>
     <div class="field"><label>Observação geral</label><input id="previoObs" placeholder="Ex.: confirmar medidas"></div>
     <div id="previoItens"></div>
     <button class="btn-add" type="button" onclick="adicionarItemPrevio()">+ Adicionar chapa no prévio</button>
@@ -152,6 +149,7 @@
     <button class="btn-dark" id="btnToggleHistorico" onclick="alternarHistorico()">Mostrar entregues</button>
     <div class="field"><label>Filtrar mês</label><input type="month" id="mesHistorico" onchange="renderHistorico()"></div>
     <div class="field"><label>Buscar cliente</label><input id="buscaHistoricoCliente" list="listaClientes" placeholder="Digite parte do nome" oninput="renderHistorico()"></div>
+    <div class="field"><label>Romaneio</label><select id="filtroRomaneio" onchange="renderHistorico()"><option value="todos">Todos</option><option value="nao">Não impressos</option><option value="sim">Impressos</option></select></div>
   </div>
   <div id="historicoResumo" class="historico-resumo"></div>
   <div id="historico" class="hide"></div>
@@ -311,10 +309,10 @@ function criarItem(id,dados={}){
  div.innerHTML=`<div class="item-title"><span>Chapa</span><button class="btn-del" type="button" onclick="removerChapa(${id})">Remover</button></div>
  <div class="item-grid">
   <div class="full"><label>Nome da chapa</label><input class="chapa" list="listaMateriais" placeholder="Digite parte do nome" oninput="calcular()"></div>
-  <div><label>Quantidade</label><input class="quantidade" inputmode="numeric" placeholder="" oninput="calcular()"></div>
-  <div><label>Valor m²</label><input class="valorM2" inputmode="decimal" placeholder="" oninput="calcular()"></div>
+  <div class="mobile-full"><label>Quantidade</label><input class="quantidade" inputmode="numeric" placeholder="" oninput="calcular()"></div>
   <div><label>Largura</label><input class="largura" inputmode="decimal" placeholder="" oninput="calcular()"></div>
   <div><label>Altura</label><input class="altura" inputmode="decimal" placeholder="" oninput="calcular()"></div>
+  <div class="mobile-full"><label>Valor m²</label><input class="valorM2" inputmode="decimal" placeholder="" oninput="calcular()"></div>
   <div class="calc full">m² total: <strong class="m2">0,00 m²</strong>Total das chapas: <strong class="totalItem">R$ 0,00</strong></div>
  </div>`;
  document.getElementById("itens").appendChild(div);
@@ -344,7 +342,7 @@ async function salvarPedido(){
  const cliente=document.getElementById("cliente").value.trim(); if(!cliente){alert("Digite o nome do cliente.");return}
  const itens=coletarItens(),subtotal=itens.reduce((s,i)=>s+i.total,0),frete=numero(document.getElementById("fretePedido").value),total=subtotal+frete,editandoId=Number(document.getElementById("editandoId").value);
  btnSalvar.disabled=true; btnSalvar.textContent="Salvando...";
- if(editandoId){const antigo=pedidos.find(p=>p.id===editandoId)||{};const pedido={...antigo,cliente,dia:diaEntrega.value,observacao:observacao.value,itens,subtotal,frete,total,status:"confirmado"};const {error}=await db.from("pedidos").update(pedidoParaDb(pedido)).eq("id",editandoId);if(error){alert("Erro ao salvar alteração: "+error.message)}}
+ if(editandoId){const antigo=pedidos.find(p=>p.id===editandoId)||{};const pedido={...antigo,cliente,dia:diaEntrega.value,observacao:observacao.value,itens,subtotal,frete,total,status:antigo.status==="romaneio_impresso"?"romaneio_impresso":"confirmado"};const {error}=await db.from("pedidos").update(pedidoParaDb(pedido)).eq("id",editandoId);if(error){alert("Erro ao salvar alteração: "+error.message)}}
  else {const pedido={cliente,dia:diaEntrega.value,observacao:observacao.value,itens,subtotal,frete,total,entregue:false,data:dataISO(),dataEntrega:null,status:"confirmado"};const {data,error}=await db.from("pedidos").insert(pedidoParaDb(pedido)).select().single();if(error){alert("Erro ao salvar pedido: "+error.message)}else if(data && !data.numero){await db.from("pedidos").update({numero:String(data.id).padStart(4,"0")}).eq("id",data.id);}}
  btnSalvar.disabled=false; btnSalvar.textContent=editandoId?"Salvar alteração":"Salvar pedido";
  limparFormulario(); await carregarPedidos();
@@ -353,7 +351,7 @@ function limparFormulario(){editandoId.value="";formTitulo.textContent="Novo ped
 function abrirModal(id){pedidoAbertoId=id; const p=pedidos.find(x=>x.id===id); if(!p)return;modalCliente.textContent=p.cliente;modalNumero.textContent="Pedido nº "+(p.numero||p.id);modalDia.textContent=p.dia;modalStatus.textContent=p.entregue?"Entregue":(p.status==="previo"?"Prévio":"Pendente");modalStatus.className="pill"+(p.status==="previo"?" status-previo":"");modalObs.textContent=p.observacao?"Obs: "+p.observacao:"";modalTrocarDia.value=p.dia;modalItens.innerHTML=(p.itens||[]).map((i,idx)=>`<div class="detail-item"><strong>${i.chapa||"Sem nome"}</strong><br>Qtd: ${i.quantidade||1} | Medida: ${String(i.largura).replace(".",",")} x ${String(i.altura).replace(".",",")} = ${Number(i.m2||0).toFixed(2).replace(".",",")} m²<br>Valor m²: ${moeda(i.valorM2)}<br>Total: <strong>${moeda(i.total||0)}</strong></div>`).join("");modalTotal.textContent="Subtotal: "+moeda(p.subtotal||0)+" | Frete: "+moeda(p.frete||0)+" | Total: "+moeda(p.total||0);modalBg.style.display="flex";}
 function fecharModal(){modalBg.style.display="none";pedidoAbertoId=null}
 modalTrocarDia.addEventListener("change",async function(){if(!pedidoAbertoId)return;const {error}=await db.from("pedidos").update({dia:this.value}).eq("id",pedidoAbertoId);if(error){alert("Erro ao trocar dia: "+error.message);return}await carregarPedidos(); abrirModal(pedidoAbertoId);})
-async function marcarEntregueModal(){if(!pedidoAbertoId)return;const p=pedidos.find(x=>x.id===pedidoAbertoId); if(!p)return;const novo=!p.entregue;const {error}=await db.from("pedidos").update({entregue:novo,data_entrega:novo?dataISO():null}).eq("id",pedidoAbertoId);if(error){alert("Erro ao alterar status: "+error.message);return}await carregarPedidos(); abrirModal(pedidoAbertoId);}
+async function marcarEntregueModal(){if(!pedidoAbertoId)return;const p=pedidos.find(x=>x.id===pedidoAbertoId); if(!p)return;const novo=!p.entregue;const {error}=await db.from("pedidos").update({entregue:novo,data_entrega:novo?dataISO():null,status:novo?(p.status==="romaneio_impresso"?"romaneio_impresso":"confirmado"):"confirmado"}).eq("id",pedidoAbertoId);if(error){alert("Erro ao alterar status: "+error.message);return}await carregarPedidos(); abrirModal(pedidoAbertoId);}
 function editarPedidoModal(){const p=pedidos.find(x=>x.id===pedidoAbertoId);if(!p)return;fecharModal();editandoId.value=p.id;formTitulo.textContent="Editando pedido";btnSalvar.textContent="Salvar alteração";btnCancelarEdicao.style.display="block";cliente.value=p.cliente;observacao.value=p.observacao||"";diaEntrega.value=p.dia;fretePedido.value=p.frete?String(p.frete).replace(".",","):"";itens.innerHTML="";p.itens.forEach(i=>criarItem(itemId++,i));mostrarAba("pedidos");scrollTo({top:0,behavior:"smooth"})}
 async function excluirPedidoModal(){if(!pedidoAbertoId)return;if(!confirm("Excluir este pedido?"))return;const {error}=await db.from("pedidos").delete().eq("id",pedidoAbertoId);if(error){alert("Erro ao excluir pedido: "+error.message);return}fecharModal(); await carregarPedidos();}
 
@@ -384,19 +382,17 @@ function coletarItensPrevio(){
 }
 function limparPrevio(){
  previoCliente.value="";
- previoWhats.value="";
  previoObs.value="";
  previoItens.innerHTML="";
  criarItemPrevio(previoItemId++);
 }
 async function salvarPrevio(){
  const cliente=document.getElementById("previoCliente").value.trim();
- const whats=document.getElementById("previoWhats").value.trim();
  const obs=document.getElementById("previoObs").value.trim();
  const itens=coletarItensPrevio();
  if(!cliente){alert("Digite o cliente do pedido prévio.");return}
  if(!itens.length){alert("Adicione pelo menos uma chapa no pedido prévio.");return}
- const observacao=[obs,whats?"WhatsApp: "+whats:""].filter(Boolean).join(" | ");
+ const observacao=obs;
  const pedido={cliente,dia:"A definir",observacao,itens,subtotal:0,frete:0,total:0,entregue:false,data:dataISO(),dataEntrega:null,status:"previo"};
  const {data,error}=await db.from("pedidos").insert(pedidoParaDb(pedido)).select().single();
  if(error){alert("Erro ao salvar prévio: "+error.message);return}
@@ -432,23 +428,29 @@ function renderEntregas(){entregas.innerHTML=""; dias.forEach(dia=>{const arr=pe
 function textoPDF(doc,texto,x,y,largura,alturaLinha=5){const linhas=doc.splitTextToSize(String(texto||""),largura);doc.text(linhas,x,y);return y+(linhas.length*alturaLinha)}
 function baixarResumoDia(dia){const arr=pedidos.filter(p=>p.dia===dia&&!p.entregue&&p.status!=="previo").sort((a,b)=>String(a.cliente||"").localeCompare(String(b.cliente||""),"pt-BR"));if(!arr.length){alert("Nenhum pedido pendente para este dia.");return}const {jsPDF}=window.jspdf;const doc=new jsPDF();let y=16;const colChapa=18,colQtd=118,colMedida=138,colM2=178;function novaPagina(){doc.addPage();y=16;cabecalho()}function cabecalho(){doc.setFont("helvetica","bold");doc.setFontSize(16);doc.text("Resumo de carregamento - "+dia,15,y);y+=8;doc.setFontSize(10);doc.setFont("helvetica","normal");doc.text("Pedidos para carregar: "+arr.length,15,y);y+=8;doc.line(15,y,200,y);y+=8}function cabecalhoTabela(){doc.setFont("helvetica","bold");doc.setFontSize(9);doc.text("Chapa",colChapa,y);doc.text("Qtd",colQtd,y,{align:"right"});doc.text("Medida",colMedida,y);doc.text("m²",colM2,y,{align:"right"});y+=4;doc.line(15,y,200,y);y+=5;doc.setFont("helvetica","normal")}cabecalho();arr.forEach(p=>{if(y>245)novaPagina();doc.setFont("helvetica","bold");doc.setFontSize(12);doc.text("#"+(p.numero||p.id)+" - "+(p.cliente||"Cliente sem nome"),15,y);y+=6;doc.setFont("helvetica","normal");doc.setFontSize(10);if(p.observacao){y=textoPDF(doc,"Obs: "+p.observacao,15,y,180);y+=2}cabecalhoTabela();(p.itens||[]).forEach(i=>{if(y>270){novaPagina();cabecalhoTabela()}const nome=doc.splitTextToSize(String(i.chapa||"Sem nome"),92);const alturaLinha=Math.max(6,nome.length*5);doc.text(nome,colChapa,y);doc.text(String(i.quantidade||1),colQtd,y,{align:"right"});doc.text(String(i.largura||0).replace(".",",")+" x "+String(i.altura||0).replace(".",","),colMedida,y);doc.text(Number(i.m2||0).toFixed(2).replace(".",","),colM2,y,{align:"right"});y+=alturaLinha});y+=4;doc.line(15,y,200,y);y+=7});doc.save("resumo-carregamento-"+dia.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]+/g,"-")+".pdf");}
 function dataReferenciaHistorico(p){return p.dataEntrega || p.data || ""}
+function romaneioImpresso(p){return p.status==="romaneio_impresso" || p.romaneioImpresso===true}
 function alternarHistorico(){historicoAberto=!historicoAberto;renderHistorico()}
+async function alternarRomaneio(id,event){if(event)event.stopPropagation();const p=pedidos.find(x=>x.id===id);if(!p)return;if(!p.entregue){alert("O romaneio só aparece depois que o pedido está entregue.");return}const novo=!romaneioImpresso(p);if(novo)imprimirRomaneio(p);const {error}=await db.from("pedidos").update({status:novo?"romaneio_impresso":"confirmado"}).eq("id",id);if(error){alert("Erro ao salvar romaneio: "+error.message);return}await carregarPedidos();if(pedidoAbertoId===id)abrirModal(id)}
 function renderHistorico(){
  const mes=mesHistorico.value||"";
  const busca=textoBusca(document.getElementById("buscaHistoricoCliente")?.value||"");
+ const filtro=document.getElementById("filtroRomaneio")?.value||"todos";
  const todosEntregues=pedidos.filter(p=>p.entregue);
  const arr=todosEntregues
   .filter(p=>!mes || dataReferenciaHistorico(p).slice(0,7)===mes)
   .filter(p=>!busca || textoBusca(p.cliente).includes(busca))
-  .sort((a,b)=>String(dataReferenciaHistorico(b)).localeCompare(String(dataReferenciaHistorico(a))));
+  .filter(p=>filtro==="todos" || (filtro==="sim"&&romaneioImpresso(p)) || (filtro==="nao"&&!romaneioImpresso(p)))
+  .sort((a,b)=>(Number(b.numero)||Number(b.id)||0)-(Number(a.numero)||Number(a.id)||0));
  const total=arr.reduce((s,p)=>s+(Number(p.total)||0),0);
+ const impressos=arr.filter(romaneioImpresso).length;
+ const naoImpressos=arr.length-impressos;
  const filtroCliente=buscaHistoricoCliente?.value?.trim();
- const descricaoFiltro=[mes?"mês selecionado":"histórico",filtroCliente?`cliente: ${filtroCliente}`:""] .filter(Boolean).join(" • ");
- historicoResumo.innerHTML=`<strong>${arr.length}</strong> pedido${arr.length===1?"":"s"} entregue${arr.length===1?"":"s"} em ${descricaoFiltro} • Total: <strong>${moeda(total)}</strong><br><span class="muted">Digite parte do nome do cliente para filtrar. Ex.: mar, luiz, alfa.</span>`;
+ const descricaoFiltro=[mes?"mês selecionado":"histórico",filtroCliente?`cliente: ${filtroCliente}`:"",filtro==="sim"?"romaneios impressos":filtro==="nao"?"romaneios não impressos":""] .filter(Boolean).join(" • ");
+ historicoResumo.innerHTML=`<strong>${arr.length}</strong> pedido${arr.length===1?"":"s"} entregue${arr.length===1?"":"s"} em ${descricaoFiltro} • Total: <strong>${moeda(total)}</strong><br><span class="muted">Romaneios: <strong>${impressos}</strong> impresso${impressos===1?"":"s"} e <strong>${naoImpressos}</strong> não impresso${naoImpressos===1?"":"s"}.</span>`;
  btnToggleHistorico.textContent=historicoAberto?"Ocultar entregues":"Mostrar entregues";
  historico.className=historicoAberto?"":"hide";
  if(!historicoAberto){historico.innerHTML="";return}
- historico.innerHTML=arr.length?arr.map(p=>`<button class="delivery done" onclick="abrirModal(${p.id})">#${p.numero||p.id} - ${p.cliente} - ${moeda(p.total)}</button>`).join(""):`<p class="muted">Nenhum pedido entregue encontrado.</p>`;
+ historico.innerHTML=arr.length?arr.map(p=>{const imp=romaneioImpresso(p);return `<div class="historico-card ${imp?"impresso":""}"><button class="delivery done" onclick="abrirModal(${p.id})">#${p.numero||p.id} - ${p.cliente} - ${moeda(p.total)} <span class="romaneio-status ${imp?"impresso":""}">${imp?"Romaneio impresso":"Romaneio não impresso"}</span></button><button class="btn-romaneio" onclick="alternarRomaneio(${p.id},event)">${imp?"Desmarcar":"Imprimir e marcar"}</button></div>`}).join(""):`<p class="muted">Nenhum pedido entregue encontrado.</p>`;
 }
 function renderDashboard(){
  const mes=mesDash.value||mesAtual();mesDash.value=mes;const arr=pedidos.filter(p=>(p.data||"").slice(0,7)===mes&&p.status!=="previo");const total=arr.reduce((s,p)=>s+(p.total||0),0),chapas=arr.reduce((s,p)=>s+(p.subtotal||0),0),fretes=arr.reduce((s,p)=>s+(p.frete||0),0),m2=arr.flatMap(p=>p.itens||[]).reduce((s,i)=>s+(i.m2||0),0);
@@ -458,6 +460,8 @@ function renderDashboard(){
  fatTotal.textContent=moeda(total);fatChapas.textContent=moeda(chapas);fatFretes.textContent=moeda(fretes);ticketMedio.textContent=moeda(arr.length?total/arr.length:0);qtdPedidos.textContent=arr.length;qtdEntregues.textContent=arr.filter(p=>p.entregue).length;qtdPendentes.textContent=arr.filter(p=>!p.entregue&&p.status!=="previo").length;m2Vendidos.textContent=m2.toFixed(2).replace(".",",");chapasVendidas.textContent=qtdChapas;
 }
 function renderTudo(){renderEntregas();renderPrevios();renderHistorico();renderDashboard()}
+function gerarRomaneioPDF(p){const {jsPDF}=window.jspdf;const doc=new jsPDF();let y=15;const dataRomaneio=new Date().toLocaleDateString("pt-BR");function header(){doc.setFont("helvetica","bold");doc.setFontSize(14);doc.text("Empório - Romaneio",15,12);doc.setFontSize(10);doc.setFont("helvetica","normal");doc.text("Feito em: "+dataRomaneio+" | Entrega: "+p.dia,200,12,{align:"right"});doc.setFont("helvetica","bold");doc.setFontSize(18);doc.text("Romaneio nº "+(p.numero||p.id),15,24);doc.setFontSize(16);doc.text("Cliente: "+(p.cliente||"Cliente sem nome"),15,33);y=45;doc.setFontSize(10);doc.text("Chapa",15,y);doc.text("Qtd",80,y);doc.text("Medida",96,y);doc.text("m²",128,y);doc.text("Vlr m²",148,y);doc.text("Total",178,y);y+=5;doc.line(15,y,200,y);y+=7;doc.setFont("helvetica","normal")}header();(p.itens||[]).forEach(i=>{if(y>270){doc.addPage();header()}const nome=(i.chapa||"Sem nome");doc.text(nome.slice(0,30),15,y);doc.text(String(i.quantidade||1),82,y);doc.text(`${i.largura}x${i.altura}`,96,y);doc.text(Number(i.m2||0).toFixed(2),128,y);doc.text(moeda(i.valorM2).replace("R$",""),148,y);doc.text(moeda(i.total||0).replace("R$",""),178,y);y+=8});if(y>245){doc.addPage();header()}y+=4;doc.line(120,y,200,y);y+=8;doc.setFont("helvetica","bold");doc.text("Subtotal chapas: "+moeda(p.subtotal||0),120,y);y+=7;doc.text("Frete: "+moeda(p.frete||0),120,y);y+=7;doc.text("Total geral: "+moeda(p.total||0),120,y);y+=18;doc.setFont("helvetica","normal");doc.text("Assinatura / conferência: _______________________________",15,y);return doc}
+function imprimirRomaneio(p){const doc=gerarRomaneioPDF(p);doc.autoPrint();const janela=window.open(doc.output("bloburl"),"_blank");if(!janela)doc.save("romaneio-"+(p.numero||p.id)+"-"+p.cliente.toLowerCase().replace(/[^a-z0-9]+/gi,"-")+".pdf")}
 function baixarPDFModal(){const p=pedidos.find(x=>x.id===pedidoAbertoId); if(!p)return;const {jsPDF}=window.jspdf; const doc=new jsPDF(); let y=15;function header(){doc.setFont("helvetica","bold");doc.setFontSize(16);doc.text("Empório - Pedido de Venda",15,12);doc.setFontSize(10);doc.setFont("helvetica","normal");doc.text("Pedido nº "+(p.numero||p.id)+" | Cliente: "+p.cliente+" | Entrega: "+p.dia,15,20);y=30;doc.setFont("helvetica","bold");doc.text("Chapa",15,y);doc.text("Qtd",80,y);doc.text("Medida",96,y);doc.text("m²",128,y);doc.text("Vlr m²",148,y);doc.text("Total",178,y);y+=5;doc.line(15,y,200,y);y+=7;doc.setFont("helvetica","normal")}header();(p.itens||[]).forEach((i,idx)=>{if(y>270){doc.addPage();header()} const nome=(i.chapa||"Sem nome");doc.text(nome.slice(0,30),15,y);doc.text(String(i.quantidade||1),82,y);doc.text(`${i.largura}x${i.altura}`,96,y);doc.text(Number(i.m2||0).toFixed(2),128,y);doc.text(moeda(i.valorM2).replace("R$",""),148,y);doc.text(moeda(i.total||0).replace("R$",""),178,y);y+=8});if(y>245){doc.addPage();header()}y+=4;doc.line(120,y,200,y);y+=8;doc.setFont("helvetica","bold");doc.text("Subtotal chapas: "+moeda(p.subtotal||0),120,y);y+=7;doc.text("Frete: "+moeda(p.frete||0),120,y);y+=7;doc.text("Total geral: "+moeda(p.total||0),120,y);y+=18;doc.setFont("helvetica","normal");doc.text("Assinatura / conferência: _______________________________",15,y);doc.save("pedido-"+(p.numero||p.id)+"-"+p.cliente.toLowerCase().replace(/[^a-z0-9]+/gi,"-")+".pdf");}
 function iniciarRealtime(){db.channel("pedidos-realtime").on("postgres_changes",{event:"*",schema:"public",table:"pedidos"},async(payload)=>{const modalAberto=pedidoAbertoId;await carregarPedidos();if(modalAberto && pedidos.some(p=>p.id===modalAberto)){abrirModal(modalAberto)}}).subscribe((status)=>{console.log("Supabase realtime:",status);});}
 function iniciarApp(){
