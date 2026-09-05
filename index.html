@@ -50,6 +50,7 @@
     .materiais-lista{margin-top:16px;border-top:1px solid #e1dbd2;padding-top:14px}
     .material-row{display:flex;justify-content:space-between;gap:12px;background:#faf8f4;border:1px solid #e1dbd2;border-radius:16px;padding:12px;margin-bottom:8px}
     .material-row strong{font-size:15px}.material-row span{font-weight:bold}
+    .cadastro-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}.cadastro-box{background:#faf8f4;border:1px solid #e1dbd2;border-radius:20px;padding:14px}.cadastro-form{display:grid;grid-template-columns:1fr auto;gap:8px;margin-bottom:12px}.cadastro-lista{max-height:430px;overflow:auto}.cadastro-item{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;background:#fff;border:1px solid #e1dbd2;border-radius:14px;padding:10px;margin-bottom:7px}.cadastro-item small{display:block;color:#777;margin-top:3px}.cadastro-item button{padding:8px 10px;font-size:12px}
     .historico-top{display:flex;gap:10px;align-items:end;flex-wrap:wrap;margin-bottom:12px}
     .historico-top .field{margin-bottom:0;min-width:210px;max-width:260px}
     .historico-resumo{background:#faf8f4;border:1px solid #e1dbd2;border-radius:18px;padding:14px;margin-bottom:10px}.historico-card{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;background:#f0ece5;border-radius:18px;padding:8px;margin:6px 0}.historico-card.pendente{background:#fff1f0}.historico-card.impresso{background:#e7f7e9}.historico-card .delivery{margin:0;text-decoration:none}.romaneio-status{display:inline-block;border-radius:999px;padding:4px 8px;font-size:12px;font-weight:bold;margin-left:6px;background:#f0ece5;color:#6b6258}.romaneio-status.pendente{background:#fee4e2;color:#b42318}.romaneio-status.impresso{background:#d1fadf;color:#166534}.btn-romaneio{background:#fff;color:#24211d;border:1px solid #e1dbd2;padding:10px 12px;font-size:13px;white-space:nowrap}
@@ -62,7 +63,7 @@
     .top-actions{display:flex;gap:10px;align-items:center}
     .btn-logout{background:#eee8de;color:#24211d;padding:10px 14px;border-radius:14px;font-size:13px}
 
-    .tabs-bottom{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid #e1dbd2;display:none;grid-template-columns:repeat(4,1fr);gap:0;z-index:50;box-shadow:0 -4px 18px rgba(0,0,0,.08)}
+    .tabs-bottom{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid #e1dbd2;display:none;grid-template-columns:repeat(5,1fr);gap:0;z-index:50;box-shadow:0 -4px 18px rgba(0,0,0,.08)}
     .tab-btn{border-radius:0;background:#fff;color:#777;padding:10px 4px;font-size:12px;line-height:1.15}
     .tab-btn strong{display:block;font-size:18px;margin-bottom:2px}
     .tab-btn.active{background:#24211d;color:white}
@@ -71,7 +72,7 @@
     .desktop-tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
     .desktop-tabs .tab-btn{border-radius:16px;background:#eee8de;color:#24211d;padding:12px 16px;font-size:14px}
     .desktop-tabs .tab-btn.active{background:#24211d;color:white}
-    @media(max-width:850px){body{padding-bottom:76px}.grid2,.row{grid-template-columns:1fr}.item-grid{grid-template-columns:1fr 1fr}.item-grid .mobile-full{grid-column:1/-1}.stats{grid-template-columns:1fr 1fr}.actions4{grid-template-columns:1fr}.brand{font-size:13px}.total{display:block}.btn-save{width:100%;margin-top:10px}.historico-top{display:block}.historico-top .field{max-width:100%;margin-bottom:10px}.historico-top button{width:100%;margin-bottom:10px}.historico-card{grid-template-columns:1fr}.historico-card .btn-romaneio{width:100%}.desktop-tabs{display:none}.tabs-bottom{display:grid}}
+    @media(max-width:850px){body{padding-bottom:76px}.grid2,.row,.cadastro-grid{grid-template-columns:1fr}.item-grid{grid-template-columns:1fr 1fr}.item-grid .mobile-full{grid-column:1/-1}.stats{grid-template-columns:1fr 1fr}.actions4{grid-template-columns:1fr}.brand{font-size:13px}.total{display:block}.btn-save{width:100%;margin-top:10px}.historico-top{display:block}.historico-top .field{max-width:100%;margin-bottom:10px}.historico-top button{width:100%;margin-bottom:10px}.historico-card{grid-template-columns:1fr}.historico-card .btn-romaneio{width:100%}.desktop-tabs{display:none}.tabs-bottom{display:grid}}
   </style>
 </head>
 <body>
@@ -98,6 +99,7 @@
   <button class="tab-btn" data-tab="entregas" onclick="mostrarAba('entregas')"><strong>🚚</strong>Entregas</button>
   <button class="tab-btn" data-tab="historico" onclick="mostrarAba('historico')"><strong>📦</strong>Histórico</button>
   <button class="tab-btn" data-tab="dashboard" onclick="mostrarAba('dashboard')"><strong>📊</strong>Dashboard</button>
+  <button class="tab-btn" data-tab="cadastros" onclick="mostrarAba('cadastros')"><strong>👥</strong>Cadastros</button>
 </nav>
 
 <section class="card tab-page active" id="aba-pedidos">
@@ -150,6 +152,15 @@
   </div>
   <div class="materiais-lista"><h3>Materiais vendidos no mês</h3><div id="materiaisVendidos"><p class="muted">Nenhum material vendido neste mês.</p></div></div>
 </section>
+
+<section class="card tab-page" id="aba-cadastros">
+  <h2>Cadastros</h2>
+  <p class="muted">Use estes nomes ao criar pedidos. Os nomes já existentes foram aproveitados automaticamente.</p>
+  <div class="cadastro-grid">
+    <div class="cadastro-box"><h3>Clientes</h3><div class="cadastro-form"><input id="novoClienteCadastro" placeholder="Nome correto do cliente" onkeydown="if(event.key==='Enter')cadastrarNome('cliente')"><button class="btn-dark" onclick="cadastrarNome('cliente')">Cadastrar</button></div><div id="cadastroClientes" class="cadastro-lista"></div></div>
+    <div class="cadastro-box"><h3>Pedras</h3><div class="cadastro-form"><input id="novaPedraCadastro" placeholder="Nome correto da pedra" onkeydown="if(event.key==='Enter')cadastrarNome('pedra')"><button class="btn-dark" onclick="cadastrarNome('pedra')">Cadastrar</button></div><div id="cadastroPedras" class="cadastro-lista"></div></div>
+  </div>
+</section>
 </div>
 
 <nav class="tabs-bottom">
@@ -157,13 +168,14 @@
   <button class="tab-btn" data-tab="entregas" onclick="mostrarAba('entregas')"><strong>🚚</strong>Entregas</button>
   <button class="tab-btn" data-tab="historico" onclick="mostrarAba('historico')"><strong>📦</strong>Histórico</button>
   <button class="tab-btn" data-tab="dashboard" onclick="mostrarAba('dashboard')"><strong>📊</strong>Dashboard</button>
+  <button class="tab-btn" data-tab="cadastros" onclick="mostrarAba('cadastros')"><strong>👥</strong>Cadastros</button>
 </nav>
 
 <div class="modal-bg" id="modalBg"><div class="modal">
-  <div class="modal-head"><div><h2 id="modalCliente" style="margin-bottom:6px">Cliente</h2><span class="pill" id="modalNumero"></span> <span class="pill" id="modalDia"></span> <span class="pill" id="modalStatus"></span></div><button class="btn-light" onclick="fecharModal()">Fechar</button></div>
+  <div class="modal-head"><div><h2 id="modalCliente" style="margin-bottom:6px">Cliente</h2><span class="pill" id="modalNumero"></span> <span class="pill" id="modalDia"></span> <span class="pill" id="modalStatus"></span></div><button class="btn-red" onclick="excluirPedidoModal()">Excluir</button></div>
   <p id="modalObs" class="muted"></p><div id="modalItens"></div><h3 id="modalTotal"></h3>
   <div class="row"><div><label>Trocar dia da entrega</label><select id="modalTrocarDia"><option>A definir</option><option>Segunda</option><option>Terça</option><option>Quarta</option><option>Quinta</option><option>Sexta</option></select></div><div><label>Trocar período</label><select id="modalTrocarPeriodo"><option>A definir</option><option>Manhã</option><option>Tarde</option></select></div></div>
-  <div class="actions4"><button class="btn-dark" onclick="marcarEntregueModal()">Entregue / voltar</button><button class="btn-light" onclick="editarPedidoModal()">Editar</button><button class="btn-light" onclick="baixarPDFModal()">Baixar PDF</button><button class="btn-light" onclick="imprimirCupomModal()">Cupom carga</button><button class="btn-red" onclick="excluirPedidoModal()">Excluir</button></div>
+  <div class="actions4"><button class="btn-dark" onclick="marcarEntregueModal()">Entregue / voltar</button><button class="btn-light" onclick="editarPedidoModal()">Editar</button><button class="btn-light" onclick="baixarPDFModal()">Baixar PDF</button><button class="btn-light" onclick="imprimirCupomModal()">Cupom carga</button><button class="btn-light" onclick="fecharModal()">Fechar</button></div>
 </div></div>
 
 <script>
@@ -209,6 +221,7 @@ const dias=["A definir","Segunda","Terça","Quarta","Quinta","Sexta"];
 const periodos=["Manhã","Tarde","A definir"];
 let itemId=1,pedidoAbertoId=null;
 let pedidos=[];
+let cadastroRows=[],clientesCatalogo=[],pedrasCatalogo=[];
 let historicoAberto=false;
 
 function mostrarAba(nome){
@@ -218,6 +231,7 @@ function mostrarAba(nome){
  document.querySelectorAll(".tab-btn[data-tab]").forEach(btn=>btn.classList.toggle("active",btn.dataset.tab===nome));
  if(nome==="dashboard") renderDashboard();
  if(nome==="historico") renderHistorico();
+ if(nome==="cadastros") renderCadastros();
  window.scrollTo({top:0,behavior:"smooth"});
 }
 
@@ -225,7 +239,7 @@ function moeda(v){return (Number(v)||0).toLocaleString("pt-BR",{style:"currency"
 function numero(v){return Number(String(v||"").replace(",","."))||0}
 function dataISO(){return new Date().toISOString().slice(0,10)}
 function mesAtual(){return new Date().toISOString().slice(0,7)}
-function textoBusca(v){return String(v||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").trim()}
+function textoBusca(v){return String(v||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/\s+/g," ").trim()}
 function partesEntrega(valor){const texto=String(valor||"A definir");const partes=texto.split(" - ");return {dia:partes[0]||"A definir",periodo:partes[1]||"A definir"}}
 function valorEntrega(dia,periodo){return periodo&&periodo!=="A definir"&&dia!=="A definir"?`${dia} - ${periodo}`:dia||"A definir"}
 function diaPedido(p){return partesEntrega(p.dia).dia}
@@ -233,16 +247,55 @@ function periodoPedido(p){return partesEntrega(p.dia).periodo}
 function atualizarListaClientes(){
  const lista=document.getElementById("listaClientes");
  if(!lista)return;
- const nomes=[...new Set(pedidos.map(p=>String(p.cliente||"").trim()).filter(Boolean))]
-  .sort((a,b)=>a.localeCompare(b,"pt-BR"));
+ const nomes=clientesCatalogo;
  lista.innerHTML=nomes.map(nome=>`<option value="${nome.replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;")}"></option>`).join("");
 }
 function atualizarListaMateriais(){
  const lista=document.getElementById("listaMateriais");
  if(!lista)return;
- const nomes=[...new Set(pedidos.flatMap(p=>(p.itens||[]).map(i=>String(i.chapa||"").trim())).filter(Boolean))]
-  .sort((a,b)=>a.localeCompare(b,"pt-BR"));
+ const nomes=pedrasCatalogo;
  lista.innerHTML=nomes.map(nome=>`<option value="${nome.replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;")}"></option>`).join("");
+}
+function listaCanonica(valores,registros,tipo){
+ const mapa=new Map();
+ valores.map(v=>String(v||"").trim()).filter(Boolean).forEach(nome=>{const chave=textoBusca(nome);if(chave&&!mapa.has(chave))mapa.set(chave,nome)});
+ registros.filter(r=>r.status==="cadastro_"+tipo).forEach(r=>{const nome=String(r.cliente||"").trim();if(nome)mapa.set(textoBusca(nome),nome)});
+ return [...mapa.values()].sort((a,b)=>a.localeCompare(b,"pt-BR"));
+}
+function reconstruirCadastros(){
+ clientesCatalogo=listaCanonica(pedidos.map(p=>p.cliente),cadastroRows,"cliente");
+ pedrasCatalogo=listaCanonica(pedidos.flatMap(p=>(p.itens||[]).map(i=>i.chapa)),cadastroRows,"pedra");
+}
+function nomeDoCatalogo(tipo,valor){const lista=tipo==="cliente"?clientesCatalogo:pedrasCatalogo;const chave=textoBusca(valor);return lista.find(nome=>textoBusca(nome)===chave)||""}
+function renderCadastros(){
+ const montar=(lista,tipo)=>lista.length?lista.map(nome=>{const chave=encodeURIComponent(textoBusca(nome)).replace(/'/g,"%27");const ocorrencias=tipo==="cliente"?pedidos.filter(p=>textoBusca(p.cliente)===textoBusca(nome)).length:pedidos.filter(p=>(p.itens||[]).some(i=>textoBusca(i.chapa)===textoBusca(nome))).length;return `<div class="cadastro-item"><div><strong>${escaparHTML(nome)}</strong><small>${ocorrencias} pedido${ocorrencias===1?"":"s"}</small></div><button class="btn-light" onclick="renomearCadastro('${tipo}','${chave}')">Renomear / unir</button></div>`}).join(""):`<p class="muted">Nenhum cadastro.</p>`;
+ const clientes=document.getElementById("cadastroClientes"),pedras=document.getElementById("cadastroPedras");
+ if(clientes)clientes.innerHTML=montar(clientesCatalogo,"cliente");if(pedras)pedras.innerHTML=montar(pedrasCatalogo,"pedra");
+}
+async function inserirCadastro(tipo,nome){
+ const registro={numero:"CAD-"+Date.now(),cliente:nome,dia:"A definir",observacao:"Cadastro de "+tipo,itens:[],subtotal:0,frete:0,total:0,entregue:false,data:dataISO(),data_entrega:null,status:"cadastro_"+tipo};
+ return await db.from("pedidos").insert(registro).select().single();
+}
+async function cadastrarNome(tipo){
+ const campo=document.getElementById(tipo==="cliente"?"novoClienteCadastro":"novaPedraCadastro");const nome=String(campo?.value||"").replace(/\s+/g," ").trim();if(!nome){alert("Digite o nome para cadastrar.");return}
+ if(nomeDoCatalogo(tipo,nome)){alert("Este nome já está cadastrado.");return}
+ const {error}=await inserirCadastro(tipo,nome);if(error){alert("Erro ao cadastrar: "+error.message);return}campo.value="";await carregarPedidos();renderCadastros();
+}
+async function renomearCadastro(tipo,chaveCodificada){
+ const chave=decodeURIComponent(chaveCodificada);const lista=tipo==="cliente"?clientesCatalogo:pedrasCatalogo;const atual=lista.find(n=>textoBusca(n)===chave);if(!atual)return;
+ const digitado=prompt("Digite o nome correto. Se já existir, os cadastros serão unidos:",atual);if(digitado===null)return;const novo=String(digitado).replace(/\s+/g," ").trim();if(!novo){alert("O nome não pode ficar vazio.");return}
+ const existente=nomeDoCatalogo(tipo,novo);if(existente&&textoBusca(novo)!==chave&&!confirm(`O nome “${existente}” já existe. Deseja unir “${atual}” a ele?`))return;const nomeFinal=existente||novo;
+ if(!confirm(`Atualizar os pedidos antigos de “${atual}” para “${nomeFinal}”?`))return;
+ let erro=null;
+ if(tipo==="cliente"){
+  for(const p of pedidos.filter(p=>textoBusca(p.cliente)===chave)){const r=await db.from("pedidos").update({cliente:nomeFinal}).eq("id",p.id);if(r.error){erro=r.error;break}}
+ }else{
+  for(const p of pedidos.filter(p=>(p.itens||[]).some(i=>textoBusca(i.chapa)===chave))){const itens=(p.itens||[]).map(i=>textoBusca(i.chapa)===chave?{...i,chapa:nomeFinal}:i);const r=await db.from("pedidos").update({itens}).eq("id",p.id);if(r.error){erro=r.error;break}}
+ }
+ if(erro){alert("Erro ao atualizar pedidos: "+erro.message);return}
+ const antigos=cadastroRows.filter(r=>r.status==="cadastro_"+tipo&&textoBusca(r.cliente)===chave);for(const r of antigos)await db.from("pedidos").delete().eq("id",r.id);
+ if(!existente){const r=await inserirCadastro(tipo,nomeFinal);if(r.error){alert("Pedidos atualizados, mas houve erro ao salvar o cadastro: "+r.error.message)}}
+ await carregarPedidos();renderCadastros();alert("Cadastro e pedidos antigos atualizados.");
 }
 
 function dbParaPedido(row){
@@ -281,7 +334,10 @@ function pedidoParaDb(p){
 async function carregarPedidos(){
  const {data,error}=await db.from("pedidos").select("*").order("id",{ascending:false});
  if(error){alert("Erro ao carregar pedidos do Supabase: "+error.message);return}
- pedidos=(data||[]).map(dbParaPedido);
+ const todas=data||[];
+ cadastroRows=todas.filter(r=>r.status==="cadastro_cliente"||r.status==="cadastro_pedra");
+ pedidos=todas.filter(r=>r.status!=="cadastro_cliente"&&r.status!=="cadastro_pedra").map(dbParaPedido);
+ reconstruirCadastros();
  atualizarListaClientes();
  atualizarListaMateriais();
  renderTudo();
@@ -321,9 +377,11 @@ function calcular(){
 }
 function coletarItens(){return [...document.querySelectorAll(".item")].map(item=>{const quantidade=numero(item.querySelector(".quantidade").value)||1,largura=numero(item.querySelector(".largura").value),altura=numero(item.querySelector(".altura").value),valorM2=numero(item.querySelector(".valorM2").value);const m2=quantidade*largura*altura,total=m2*valorM2;return {chapa:item.querySelector(".chapa").value.trim(),quantidade,largura,altura,valorM2,m2,total};});}
 async function salvarPedido(){
- const cliente=document.getElementById("cliente").value.trim(); if(!cliente){alert("Digite o nome do cliente.");return}
+ let cliente=document.getElementById("cliente").value.trim(); if(!cliente){alert("Escolha o cliente.");return}
+ const clienteCadastrado=nomeDoCatalogo("cliente",cliente);if(!clienteCadastrado){alert("Cliente não cadastrado. Abra a aba Cadastros e cadastre o cliente antes de salvar o pedido.");return}cliente=clienteCadastrado;document.getElementById("cliente").value=cliente;
  const itens=coletarItens(),subtotal=itens.reduce((s,i)=>s+i.total,0),frete=numero(document.getElementById("fretePedido").value),total=subtotal+frete,editandoId=Number(document.getElementById("editandoId").value),entrega=valorEntrega(diaEntrega.value,periodoEntrega.value);
  if(itens.some(i=>!i.chapa)){alert("Digite o nome da chapa antes de salvar.");return}
+ for(const item of itens){const pedra=nomeDoCatalogo("pedra",item.chapa);if(!pedra){alert(`Pedra não cadastrada: ${item.chapa}. Abra a aba Cadastros e cadastre a pedra antes de salvar o pedido.`);return}item.chapa=pedra}
  btnSalvar.disabled=true; btnSalvar.textContent="Salvando...";
  if(editandoId){const antigo=pedidos.find(p=>p.id===editandoId)||{};const pedido={...antigo,cliente,dia:entrega,observacao:observacao.value,itens,subtotal,frete,total,status:antigo.status==="romaneio_impresso"?"romaneio_impresso":"confirmado"};const {error}=await db.from("pedidos").update(pedidoParaDb(pedido)).eq("id",editandoId);if(error){alert("Erro ao salvar alteração: "+error.message)}}
  else {const pedido={cliente,dia:entrega,observacao:observacao.value,itens,subtotal,frete,total,entregue:false,data:dataISO(),dataEntrega:null,status:"confirmado"};const {data,error}=await db.from("pedidos").insert(pedidoParaDb(pedido)).select().single();if(error){alert("Erro ao salvar pedido: "+error.message)}else if(data && !data.numero){await db.from("pedidos").update({numero:String(data.id).padStart(4,"0")}).eq("id",data.id);}}
@@ -377,12 +435,12 @@ function renderDashboard(){
  const lista=Object.entries(materiais).sort((a,b)=>b[1]-a[1]);materiaisVendidos.innerHTML=lista.length?lista.map(([nome,qtd])=>`<div class="material-row"><strong>${nome}</strong><span>${qtd} chapa${qtd==1?"":"s"}</span></div>`).join(""):`<p class="muted">Nenhum material vendido neste mês.</p>`;
  fatTotal.textContent=moeda(total);fatChapas.textContent=moeda(chapas);fatFretes.textContent=moeda(fretes);ticketMedio.textContent=moeda(arr.length?total/arr.length:0);qtdPedidos.textContent=arr.length;qtdEntregues.textContent=arr.filter(p=>p.entregue).length;qtdPendentes.textContent=arr.filter(p=>!p.entregue&&p.status!=="previo").length;m2Vendidos.textContent=m2.toFixed(2).replace(".",",");chapasVendidas.textContent=qtdChapas;
 }
-function renderTudo(){renderEntregas();renderHistorico();renderDashboard()}
+function renderTudo(){renderEntregas();renderHistorico();renderDashboard();renderCadastros()}
 function textoArquivo(v){return String(v||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"")||"sem-nome"}
 function nomeArquivoPedido(prefixo,p){return prefixo+"-"+(p.numero||p.id)+"-"+textoArquivo(p.cliente)+".pdf"}
 function escaparHTML(v){return String(v||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;")}
 function imprimirCupomModal(){const p=pedidos.find(x=>x.id===pedidoAbertoId);if(!p)return;const data=new Date().toLocaleDateString("pt-BR");const itens=(p.itens||[]).map(i=>`<div class="item"><div class="linha-produto">${escaparHTML(i.quantidade||1)}x ${escaparHTML(i.chapa||"Sem nome")}</div><div class="medida">Medida: ${escaparHTML(String(i.largura||0).replace(".",",")+"x"+String(i.altura||0).replace(".",","))}</div></div>`).join("");const obs=p.observacao?`<div class="sep"></div><strong>OBS</strong><p>${escaparHTML(p.observacao)}</p>`:"";const html=`<!doctype html><html><head><meta charset="utf-8"><title>cupom-${escaparHTML(p.numero||p.id)}-${escaparHTML(textoArquivo(p.cliente))}</title><style>@page{size:58mm 130mm;margin:0}*{box-sizing:border-box}html,body{margin:0!important;padding:0!important;width:58mm;min-height:1mm;overflow:visible}body{font-family:"Courier New",monospace;color:#000;font-size:13px;font-weight:700}.cupom{position:absolute;top:0;left:0;width:58mm;padding:2mm 3mm 0 3mm}.topo-entrega{text-align:center;font-size:14px;font-weight:900;letter-spacing:1px}.espaco-topo{height:20mm}.cliente{font-family:Arial,sans-serif;font-size:14px;font-weight:bold;word-break:break-word}.sep{border-top:1px dashed #000;margin:4px 0}.item{break-inside:avoid;margin:4px 0 7px}.linha-produto{font-size:15px;font-weight:900;word-break:break-word}.medida{font-size:13px;font-weight:bold;white-space:nowrap;margin-top:1px}.rodape-cupom{margin-top:50mm;text-align:center;font-size:12px;font-weight:bold;letter-spacing:1px}p{margin:3px 0;word-break:break-word;font-weight:bold}@media print{html,body{width:58mm!important;height:auto!important}.cupom{top:0!important}}</style></head><body><div class="cupom"><div class="topo-entrega">ENTREGA</div><div class="espaco-topo"></div><div class="cliente">${escaparHTML(p.cliente||"Cliente sem nome")}</div><div>Data: ${data}</div><div class="sep"></div>${itens}${obs}<div class="rodape-cupom">EMPÓRIO</div></div><script>window.onload=()=>{setTimeout(()=>window.print(),200)}<\/script></body></html>`;const janela=window.open("","_blank","width=300,height=420");if(!janela){alert("O navegador bloqueou a janela de impressão do cupom.");return}janela.document.open();janela.document.write(html);janela.document.close()}
-function gerarRomaneioPDF(p){const {jsPDF}=window.jspdf;const doc=new jsPDF();let y=15;const dataRomaneio=new Date().toLocaleDateString("pt-BR");function header(){doc.setFont("helvetica","bold");doc.setFontSize(14);doc.text("Empório - Romaneio",15,12);doc.setFontSize(10);doc.setFont("helvetica","normal");doc.text("Feito em: "+dataRomaneio+" | Entrega: "+p.dia,200,12,{align:"right"});doc.setFont("helvetica","bold");doc.setFontSize(18);doc.text("Romaneio nº "+(p.numero||p.id),15,24);doc.setFontSize(16);doc.text("Cliente: "+(p.cliente||"Cliente sem nome"),15,33);y=45;doc.setFontSize(10);doc.text("Chapa",15,y);doc.text("Qtd",80,y);doc.text("Medida",96,y);doc.text("m²",128,y);doc.text("Vlr m²",148,y);doc.text("Total",178,y);y+=5;doc.line(15,y,200,y);y+=7;doc.setFont("helvetica","normal")}header();(p.itens||[]).forEach(i=>{if(y>270){doc.addPage();header()}const nome=(i.chapa||"Sem nome");doc.text(nome.slice(0,30),15,y);doc.text(String(i.quantidade||1),82,y);doc.text(`${i.largura}x${i.altura}`,96,y);doc.text(Number(i.m2||0).toFixed(2),128,y);doc.text(moeda(i.valorM2).replace("R$",""),148,y);doc.text(moeda(i.total||0).replace("R$",""),178,y);y+=8});if(y>245){doc.addPage();header()}y+=4;doc.line(120,y,200,y);y+=8;doc.setFont("helvetica","bold");doc.text("Subtotal chapas: "+moeda(p.subtotal||0),120,y);y+=7;doc.text("Frete: "+moeda(p.frete||0),120,y);y+=7;doc.text("Total geral: "+moeda(p.total||0),120,y);y+=18;doc.setFont("helvetica","normal");doc.text("Assinatura / conferência: _______________________________",15,y);return doc}
+function gerarRomaneioPDF(p){const {jsPDF}=window.jspdf;const doc=new jsPDF();let y=15;const dataRomaneio=p.dataEntrega?String(p.dataEntrega).slice(0,10).split("-").reverse().join("/"):"não registrada";function header(){doc.setFont("helvetica","bold");doc.setFontSize(14);doc.text("Empório - Romaneio",15,12);doc.setFontSize(10);doc.setFont("helvetica","normal");doc.text("Entregue em: "+dataRomaneio+" | Entrega: "+p.dia,200,12,{align:"right"});doc.setFont("helvetica","bold");doc.setFontSize(18);doc.text("Romaneio nº "+(p.numero||p.id),15,24);doc.setFontSize(16);doc.text("Cliente: "+(p.cliente||"Cliente sem nome"),15,33);y=45;doc.setFontSize(10);doc.text("Chapa",15,y);doc.text("Qtd",80,y);doc.text("Medida",96,y);doc.text("m²",128,y);doc.text("Vlr m²",148,y);doc.text("Total",178,y);y+=5;doc.line(15,y,200,y);y+=7;doc.setFont("helvetica","normal")}header();(p.itens||[]).forEach(i=>{if(y>270){doc.addPage();header()}const nome=(i.chapa||"Sem nome");doc.text(nome.slice(0,30),15,y);doc.text(String(i.quantidade||1),82,y);doc.text(`${i.largura}x${i.altura}`,96,y);doc.text(Number(i.m2||0).toFixed(2),128,y);doc.text(moeda(i.valorM2).replace("R$",""),148,y);doc.text(moeda(i.total||0).replace("R$",""),178,y);y+=8});if(y>245){doc.addPage();header()}y+=4;doc.line(120,y,200,y);y+=8;doc.setFont("helvetica","bold");doc.text("Subtotal chapas: "+moeda(p.subtotal||0),120,y);y+=7;doc.text("Frete: "+moeda(p.frete||0),120,y);y+=7;doc.text("Total geral: "+moeda(p.total||0),120,y);y+=18;doc.setFont("helvetica","normal");doc.text("Assinatura / conferência: _______________________________",15,y);return doc}
 function imprimirRomaneio(p){const doc=gerarRomaneioPDF(p);const arquivo=nomeArquivoPedido("romaneio",p);doc.setProperties({title:arquivo.replace(".pdf","")});doc.autoPrint();const blob=doc.output("blob");const file=new File([blob],arquivo,{type:"application/pdf"});const url=URL.createObjectURL(file);const janela=window.open(url,"_blank");if(!janela)doc.save(arquivo)}
 function baixarPDFModal(){const p=pedidos.find(x=>x.id===pedidoAbertoId); if(!p)return;const {jsPDF}=window.jspdf; const doc=new jsPDF(); const dataEmissao=new Date().toLocaleDateString("pt-BR"); let y=15;function header(){doc.setFont("helvetica","bold");doc.setFontSize(16);doc.text("Empório - Pedido de Venda",15,12);doc.setFontSize(18);doc.text("Cliente: "+(p.cliente||"Cliente sem nome"),15,22);doc.setFontSize(10);doc.setFont("helvetica","normal");doc.text("Data: "+dataEmissao+" | Pedido nº "+(p.numero||p.id),15,30);y=40;doc.setFont("helvetica","bold");doc.text("Chapa",15,y);doc.text("Qtd",80,y);doc.text("Medida",96,y);doc.text("m²",128,y);doc.text("Vlr m²",148,y);doc.text("Total",178,y);y+=5;doc.line(15,y,200,y);y+=7;doc.setFont("helvetica","normal")}header();(p.itens||[]).forEach((i,idx)=>{if(y>270){doc.addPage();header()} const nome=(i.chapa||"Sem nome");doc.text(nome.slice(0,30),15,y);doc.text(String(i.quantidade||1),82,y);doc.text(`${i.largura}x${i.altura}`,96,y);doc.text(Number(i.m2||0).toFixed(2),128,y);doc.text(moeda(i.valorM2).replace("R$",""),148,y);doc.text(moeda(i.total||0).replace("R$",""),178,y);y+=8});if(y>245){doc.addPage();header()}y+=4;doc.line(120,y,200,y);y+=8;doc.setFont("helvetica","bold");doc.text("Subtotal chapas: "+moeda(p.subtotal||0),120,y);y+=7;doc.text("Frete: "+moeda(p.frete||0),120,y);y+=7;doc.text("Total geral: "+moeda(p.total||0),120,y);y+=18;doc.setFont("helvetica","normal");doc.text("Assinatura / conferência: _______________________________",15,y);doc.setProperties({title:nomeArquivoPedido("pedido",p).replace(".pdf","")});doc.save(nomeArquivoPedido("pedido",p));}
 function iniciarRealtime(){db.channel("pedidos-realtime").on("postgres_changes",{event:"*",schema:"public",table:"pedidos"},async(payload)=>{const modalAberto=pedidoAbertoId;await carregarPedidos();if(modalAberto && pedidos.some(p=>p.id===modalAberto)){abrirModal(modalAberto)}}).subscribe((status)=>{console.log("Supabase realtime:",status);});}
