@@ -1,0 +1,423 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Controle Bitruck</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f4f4f5;font-family:Arial,sans-serif;color:#18181b;padding-bottom:78px}
+.wrap{max-width:760px;margin:auto;padding:12px}.top{background:#111827;color:#fff;padding:18px;border-radius:18px;margin-bottom:12px}
+h1{margin:0;font-size:24px}h2{font-size:18px;margin:0 0 12px}h3{font-size:14px;color:#71717a;margin:18px 0 8px}
+.card{background:#fff;padding:16px;border-radius:18px;margin-bottom:12px;box-shadow:0 1px 4px #0001}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+label{font-size:12px;font-weight:bold;color:#71717a}input,select{width:100%;margin-top:5px;padding:12px;border:1px solid #e4e4e7;border-radius:12px;font-size:16px}
+.btn{width:100%;padding:13px;border:0;border-radius:13px;background:#111827;color:#fff;font-weight:bold;font-size:15px}
+.btn2{padding:9px 11px;border:1px solid #ddd;border-radius:11px;background:#fff;font-weight:bold}.danger{background:#fee2e2;color:#991b1b}
+.note{font-size:13px;color:#666;background:#fafafa;border:1px solid #eee;border-radius:12px;padding:10px;margin-top:10px}
+.row{display:flex;justify-content:space-between;gap:10px;padding:10px 0;border-bottom:1px solid #eee}.row span{color:#71717a}.row strong{font-size:16px}
+.big{background:#fafafa;border:1px solid #eee;border-radius:14px;padding:12px;margin-bottom:9px}.big small{display:block;color:#71717a;font-weight:bold}.big b{font-size:26px}
+.item{border:1px solid #eee;border-radius:14px;padding:12px;margin-bottom:10px}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.pill{display:inline-block;padding:4px 8px;border-radius:999px;font-size:12px;font-weight:bold}.open{background:#fee2e2;color:#991b1b}.ok{background:#dcfce7;color:#166534}
+.tab{display:none}.tab.active{display:block}.nav{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid #ddd;display:grid;grid-template-columns:repeat(6,1fr)}
+.nav button{border:0;background:#fff;padding:8px 2px;font-size:10px;font-weight:bold;color:#666}.nav button.active{background:#f1f5f9;color:#111}.nav span{display:block;font-size:18px}
+@media(max-width:540px){.grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="top"><h1>Controle Bitruck</h1><div style="opacity:.75;font-size:13px;margin-top:5px">Modelo igual ao caderno</div></div>
+
+<section id="tab-lancar" class="tab active"><div class="card">
+<h2>🚛 Lançamento</h2>
+<div class="grid">
+<label>Nº viagem<input id="viagem"></label><label>Data<input id="data" type="date"></label>
+</div>
+
+<h3>SUBIDA</h3>
+<div class="grid">
+<label>Frete subida<input id="frete" type="number"></label>
+<label>Retido desta viagem<input id="retido" type="number"></label>
+<label>Retido anterior recebido agora<input id="retidoAnterior" type="number"></label>
+<label>Recebido agora<input id="recebido" readonly></label>
+</div>
+
+
+<h3>CUSTOS</h3>
+<div class="grid">
+<label>Posto / Diesel<input id="diesel" type="number"></label>
+<label>Chapa / carga<input id="chapaCusto" type="number"></label>
+<label>Pedágio<input id="pedagio" type="number"></label>
+<label>Pneus<input id="pneus" type="number"></label>
+<label>Outros<input id="outros" type="number"></label>
+<label>Ajudante<input id="ajudante" type="number"></label>
+<label>Manutenção<input id="manutencao" type="number"></label>
+<label>Total custos<input id="totalCustos" readonly></label>
+</div>
+
+<h3>DESCIDA</h3>
+<div class="grid">
+<label>Chapas<input id="chapas" type="number" oninput="calc()"></label>
+<label>Valor por chapa<input id="valorChapa" type="number" value="173" oninput="calc()"></label>
+<label>M² total<input id="m2" type="number"></label>
+<label>Total descida<input id="totalDescida" readonly></label>
+</div>
+
+<h3>COMISSÃO</h3>
+<div class="grid">
+<label>Comissão %<input id="pct" type="number" value="15"></label>
+<label>Base da comissão<input id="baseComissao" readonly></label>
+<label>Comissão total<input id="comissao" readonly></label>
+<label>Recebido - custos<input id="liquidoRecebido" readonly></label>
+<label>Saldo da comissão<input id="saldoComissao" readonly></label>
+</div>
+<div class="note">Comissão = (frete subida + valor da descida) × percentual. Depois: recebido − custos = valor já abatido da comissão. Saldo da comissão = comissão total − (recebido − custos).</div>
+
+
+<div style="margin-top:14px"><button class="btn" onclick="salvar()">Salvar viagem</button></div>
+<div style="margin-top:9px"><button class="btn2" style="width:100%" onclick="limpar()">Cancelar edição / limpar</button></div>
+</div></section>
+
+<section id="tab-resumo" class="tab"><div class="card"><h2>📊 Resumo</h2><div id="resumo"></div></div></section>
+<section id="tab-historico" class="tab"><div class="card"><h2>📋 Histórico</h2><div id="historico"></div></div></section>
+<section id="tab-retidos" class="tab"><div class="card"><h2>💰 Retidos</h2><div id="retidos"></div></div></section>
+
+<section id="tab-motorista" class="tab">
+<div class="card">
+<h2>🚚 Custo Real do Caminhão</h2>
+<div class="note">Aqui entra o custo total da viagem para descobrir quanto realmente custou trazer as suas chapas. O diesel pago em boleto entra aqui, mesmo não saindo do dinheiro recebido pelo motorista.</div>
+
+<h3>Selecionar viagem</h3>
+<label>Escolha a viagem
+<select id="ctViagemSelecionada" onchange="puxarDadosViagem()">
+<option value="">Selecione...</option>
+</select>
+</label>
+<div class="note" style="margin-top:8px">Ao escolher a viagem, o sistema puxa automaticamente custo da viagem, comissão, frete da subida, metragem e número de chapas.</div>
+
+<h3>Custos da viagem</h3>
+<div class="grid">
+<label>Custo da viagem / despesas pagas pelo motorista<input id="ctCustoViagem" type="number"></label>
+<label>Diesel pago em boleto<input id="ctDieselBoleto" type="number"></label>
+<label>Comissão motorista<input id="ctComissao" type="number"></label>
+<label>Outros custos<input id="ctOutros" type="number"></label>
+</div>
+
+<h3>Carga própria</h3>
+<div class="grid">
+<label>Valor do frete da subida<input id="ctSubida" type="number"></label>
+<label>Metragem total das chapas<input id="ctM2" type="number"></label>
+<label>Nº de chapas<input id="ctChapas" type="number"></label>
+<label>Valor por chapa se fosse terceiro<input id="ctValorTerceiro" type="number" value="173"></label>
+</div>
+
+<h3>Resultado</h3>
+<div class="big"><small>Custo total do caminhão</small><b id="ctTotal">R$ 0,00</b></div>
+<div class="big"><small>Custo da descida / suas chapas</small><b id="ctDescida">R$ 0,00</b></div>
+<div class="row"><span>Custo por m²</span><strong id="ctPorM2">R$ 0,00</strong></div>
+<div class="row"><span>Custo por chapa</span><strong id="ctPorChapa">R$ 0,00</strong></div>
+<div class="row"><span>Frete por terceiro</span><strong id="ctTerceiro">R$ 0,00</strong></div>
+<div class="big"><small>Economia com caminhão próprio</small><b id="ctEconomia">R$ 0,00</b></div>
+<div class="note">Custo descida = custo total do caminhão − frete da subida. Economia = (chapas × valor de terceiro) − custo da descida.</div>
+<div style="margin-top:14px"><button type="button" class="btn" onclick="salvarCustoCaminhao()">Salvar cálculo</button></div>
+</div>
+<div class="card"><h2>Histórico dos custos</h2><div id="ctHistorico"></div></div>
+</section>
+
+<section id="tab-geral" class="tab"><div class="card"><h2>📈 Geral</h2><div id="geral"></div></div>
+<div class="card"><button class="btn2 danger" style="width:100%" onclick="zerar()">Zerar tudo</button></div></section>
+</div>
+
+<nav class="nav">
+<button class="active" onclick="abrir('lancar',this)"><span>🚛</span>Lançar</button>
+<button onclick="abrir('resumo',this)"><span>📊</span>Resumo</button>
+<button onclick="abrir('historico',this)"><span>📋</span>Hist.</button>
+<button onclick="abrir('retidos',this)"><span>💰</span>Retidos</button>
+<button onclick="abrir('motorista',this)"><span>🚚</span>Custos</button>
+<button onclick="abrir('geral',this)"><span>📈</span>Geral</button>
+</nav>
+
+<script>
+let viagens=JSON.parse(localStorage.getItem('bitruckCadernoViagens')||'[]');
+let movs=JSON.parse(localStorage.getItem('bitruckCadernoMotorista')||'[]');
+let editando=null, atual=null;
+let custosCaminhao = [];
+try {
+  custosCaminhao = JSON.parse(localStorage.getItem('bitruckCustosCaminhao') || '[]');
+  if(!Array.isArray(custosCaminhao)) custosCaminhao = [];
+} catch(e) {
+  custosCaminhao = [];
+}
+const $=id=>document.getElementById(id), num=id=>Number($(id).value||0), br=v=>Number(v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+
+function abrir(nome,btn){
+ document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active')); $('tab-'+nome).classList.add('active');
+ document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active')); if(btn)btn.classList.add('active');
+ renderTudo(); window.scrollTo(0,0);
+}
+function calc(){
+ const frete=num('frete'), retido=Math.max(num('retido'),0), retidoAnterior=Math.max(num('retidoAnterior'),0);
+ const recebido=Math.max(frete-retido,0)+retidoAnterior;
+ const custos=num('diesel')+num('chapaCusto')+num('pedagio')+num('pneus')+num('outros')+num('ajudante')+num('manutencao');
+ const chapas = parseFloat($('chapas').value) || 0;
+ const valorChapa = parseFloat($('valorChapa').value) || 0;
+ const totalDescida = chapas * valorChapa;
+ const baseComissao=frete+totalDescida, pct=num('pct'), comissao=baseComissao*pct/100;
+ const liquidoRecebido = recebido - custos;
+ const saldoComissao = comissao - liquidoRecebido;
+ const comissaoPendente = Math.max(saldoComissao,0);
+ const excedenteMotorista = Math.max(-saldoComissao,0);
+ const custoTotal=custos+comissao, custoDescida=custoTotal-frete, m2=num('m2');
+ const custoChapa=chapas?custoDescida/chapas:0, custoM2=m2?custoDescida/m2:0, economia=totalDescida-custoDescida;
+ $('recebido').value = br(recebido);
+ $('totalCustos').value = br(custos);
+ $('totalDescida').value = br(totalDescida);
+ $('baseComissao').value = br(baseComissao);
+ $('comissao').value = br(comissao);
+ $('liquidoRecebido').value = br(liquidoRecebido);
+ $('saldoComissao').value = br(saldoComissao);
+ return {id:editando||Date.now()+'-'+Math.random().toString(36).slice(2),viagem:$('viagem').value,data:$('data').value,frete,retido,retidoAnterior,recebido,
+ diesel:num('diesel'),chapaCusto:num('chapaCusto'),pedagio:num('pedagio'),pneus:num('pneus'),outros:num('outros'),ajudante:num('ajudante'),manutencao:num('manutencao'),
+ custos,chapas,valorChapa,m2,totalDescida,baseComissao,pct,comissao,liquidoRecebido,saldoComissao,comissaoPendente,excedenteMotorista,
+ custoTotal,custoDescida,custoChapa,custoM2,economia,statusRetido:retido>0?'aberto':'recebido',statusComissao:comissaoPendente>0?'pendente':'paga'};
+}
+function salvar(){
+ const v=calc();
+ if(editando){
+   const antigo=viagens.find(x=>x.id===editando);
+   v.statusRetido=antigo?.statusRetido||v.statusRetido; v.statusComissao=antigo?.statusComissao||'pendente';
+   viagens=viagens.map(x=>x.id===editando?v:x);
+   movs=movs.map(m=>m.viagemId===editando&&m.tipo==='comissao_pendente'?{...m,valor:v.comissaoPendente,data:v.data,viagem:v.viagem}:m);
+   editando=null;
+ }else{
+   viagens.unshift(v);
+   if(v.comissaoPendente>0) movs.unshift({id:'c-'+v.id,tipo:'comissao_pendente',valor:v.comissaoPendente,data:v.data,viagem:v.viagem,viagemId:v.id});
+ }
+ atual=v; persist(); renderTudo(); limpar(); abrir('resumo',document.querySelectorAll('.nav button')[1]);
+}
+function limpar(){
+ editando=null; $('viagem').value=viagens.length+1; $('data').value=new Date().toISOString().slice(0,10);
+ ['frete','retido','retidoAnterior','diesel','chapaCusto','pedagio','pneus','outros','ajudante','manutencao','chapas','m2'].forEach(id=>$(id).value='');
+ $('valorChapa').value=173;$('pct').value=15;calc();
+}
+function editar(id){
+ const v=viagens.find(x=>x.id===id); if(!v)return; editando=id; atual=v;
+ const map={viagem:'viagem',data:'data',frete:'frete',retido:'retido',retidoAnterior:'retidoAnterior',diesel:'diesel',chapaCusto:'chapaCusto',pedagio:'pedagio',pneus:'pneus',outros:'outros',ajudante:'ajudante',manutencao:'manutencao',chapas:'chapas',m2:'m2',valorChapa:'valorChapa',pct:'pct'};
+ Object.entries(map).forEach(([k,id2])=>$(id2).value=v[k]??''); calc(); abrir('lancar',document.querySelectorAll('.nav button')[0]);
+}
+function excluir(id){if(!confirm('Excluir esta viagem?'))return; viagens=viagens.filter(v=>v.id!==id);movs=movs.filter(m=>m.viagemId!==id);persist();renderTudo()}
+function marcarRetido(id){
+ viagens=viagens.map(v=>v.id===id?{...v,statusRetido:v.statusRetido==='recebido'?'aberto':'recebido',dataRetido:v.statusRetido==='recebido'?null:new Date().toISOString().slice(0,10)}:v);
+ persist();renderTudo();
+}
+function renderResumo(){
+ const v=atual||viagens[0]; if(!v){$('resumo').innerHTML='<div class="note">Nenhuma viagem salva.</div>';return}
+ $('resumo').innerHTML=`
+ <div class="big"><small>Frete subida</small><b>${br(v.frete)}</b></div>
+ <div class="row"><span>Retido desta viagem</span><strong>- ${br(v.retido)}</strong></div>
+ <div class="row"><span>Retido anterior recebido</span><strong>+ ${br(v.retidoAnterior)}</strong></div>
+ <div class="row"><span>Recebido agora</span><strong>${br(v.recebido)}</strong></div>
+ <div class="row"><span>Total custos</span><strong>${br(v.custos)}</strong></div>
+ <div class="row"><span>Descida</span><strong>${v.chapas} × ${br(v.valorChapa)} = ${br(v.totalDescida)}</strong></div>
+ <div class="row"><span>Base comissão</span><strong>${br(v.baseComissao)}</strong></div>
+ <div class="big"><small>Comissão total (${v.pct}%)</small><b>${br(v.comissao)}</b></div>
+ <div class="row"><span>Recebido - custos</span><strong>${br(v.liquidoRecebido)}</strong></div>
+ <div class="big"><small>Saldo da comissão</small><b>${br(v.saldoComissao)}</b></div>
+ ${v.excedenteMotorista>0?`<div class="note">O motorista ficou com ${br(v.excedenteMotorista)} a mais do que a comissão desta viagem.</div>`:''}
+ <div class="row"><span>Custo descida</span><strong>${br(v.custoDescida)}</strong></div>
+ <div class="row"><span>Custo por chapa</span><strong>${br(v.custoChapa)}</strong></div>
+ <div class="row"><span>Custo por m²</span><strong>${br(v.custoM2)}</strong></div>
+ <div class="row"><span>Economia</span><strong>${br(v.economia)}</strong></div>`;
+}
+function renderHistorico(){
+ $('historico').innerHTML=viagens.length?viagens.map(v=>`<div class="item"><strong>Viagem ${v.viagem}</strong> <span class="pill ${v.statusRetido==='recebido'?'ok':'open'}">${v.statusRetido==='recebido'?'retido recebido':'retido aberto'}</span><div style="font-size:12px;color:#777;margin-top:3px">${v.data||''}</div><div class="row"><span>Recebido</span><strong>${br(v.recebido)}</strong></div><div class="row"><span>Comissão total</span><strong>${br(v.comissao)}</strong></div><div class="row"><span>Saldo comissão</span><strong>${br(v.saldoComissao)}</strong></div><div class="actions"><button class="btn2" onclick="atual=viagens.find(x=>x.id==='${v.id}');renderResumo();abrir('resumo',document.querySelectorAll('.nav button')[1])">Ver</button><button class="btn2" onclick="editar('${v.id}')">Editar</button><button class="btn2" onclick="marcarRetido('${v.id}')">Retido</button><button class="btn2 danger" onclick="excluir('${v.id}')">Excluir</button></div></div>`).join(''):'<div class="note">Nenhuma viagem.</div>';
+}
+function renderRetidos(){
+ const abertos=viagens.filter(v=>v.retido>0&&v.statusRetido!=='recebido'), recebidos=viagens.filter(v=>v.retido>0&&v.statusRetido==='recebido');
+ $('retidos').innerHTML=`<div class="big"><small>Em aberto</small><b>${br(abertos.reduce((s,v)=>s+v.retido,0))}</b></div><div class="big"><small>Recebidos</small><b>${br(recebidos.reduce((s,v)=>s+v.retido,0))}</b></div>`+
+ viagens.filter(v=>v.retido>0).map(v=>`<div class="item"><strong>Viagem ${v.viagem}</strong><div class="row"><span>Retido</span><strong>${br(v.retido)}</strong></div>${v.dataRetido?`<div style="font-size:12px;color:#666">Recebido em ${v.dataRetido}</div>`:''}<button class="btn2" onclick="marcarRetido('${v.id}')">${v.statusRetido==='recebido'?'Voltar para aberto':'Marcar recebido'}</button></div>`).join('');
+}
+function saldoMot(){return movs.reduce((s,m)=>s+(m.tipo==='emprestimo'?m.valor:m.tipo==='devolucao'?-m.valor:0),0)}
+function pendCom(){return movs.reduce((s,m)=>s+(m.tipo==='comissao_pendente'?m.valor:m.tipo==='comissao_paga'?-m.valor:0),0)}
+function movMotorista(tipo){
+ const valor=tipo==='emprestimo'?num('emprestimo'):num('devolucao'); if(valor<=0)return alert('Digite um valor.');
+ if(tipo==='devolucao'&&valor>saldoMot())return alert('A devolução não pode ser maior que o saldo devedor.');
+ const obs=tipo==='emprestimo'?$('obsEmprestimo').value:$('obsDevolucao').value;
+ movs.unshift({id:Date.now()+'',tipo,valor,obs,data:new Date().toISOString().slice(0,10)});persist();renderTudo();
+ if(tipo==='emprestimo'){$('emprestimo').value='';$('obsEmprestimo').value=''}else{$('devolucao').value='';$('obsDevolucao').value=''}
+}
+function pagarComissao(){
+ const v=num('pagCom'), p=pendCom(); if(v<=0)return alert('Digite o valor.'); if(v>p)return alert('Valor maior que a comissão pendente.');
+ movs.unshift({id:Date.now()+'p',tipo:'comissao_paga',valor:v,data:new Date().toISOString().slice(0,10)});
+ let r=v; viagens=viagens.map(x=>{if(x.statusComissao==='paga')return x;if(r>=Math.max(x.comissaoPendente||x.saldoComissao||0,0)){r-=Math.max(x.comissaoPendente||x.saldoComissao||0,0);return {...x,statusComissao:'paga'}}return x});
+ $('pagCom').value='';persist();renderTudo();
+}
+function renderMotorista(){
+ $('saldoMotorista').textContent=br(saldoMot());$('comPend').textContent=br(pendCom());$('comPagas').textContent=br(movs.filter(m=>m.tipo==='comissao_paga').reduce((s,m)=>s+m.valor,0));
+ $('histMotorista').innerHTML=movs.length?movs.map(m=>`<div class="item"><strong>${m.tipo.replaceAll('_',' ')}</strong><div style="font-size:12px;color:#777">${m.data||''}${m.viagem?' • viagem '+m.viagem:''}${m.obs?' • '+m.obs:''}</div><div class="row"><span>Valor</span><strong>${br(m.valor)}</strong></div></div>`).join(''):'<div class="note">Sem lançamentos.</div>';
+}
+function renderGeral(){
+  const somaCustos = campo => custosCaminhao.reduce((s,c)=>s+Number(c[campo]||0),0);
+
+  const totalCalculos = custosCaminhao.length;
+  const totalCaminhao = somaCustos('total');
+  const totalSubida = somaCustos('subida');
+  const totalDescida = somaCustos('descida');
+  const totalEconomia = somaCustos('economia');
+  const totalM2 = somaCustos('m2');
+  const totalChapas = somaCustos('chapas');
+  const mediaM2 = totalM2 ? totalDescida / totalM2 : 0;
+  const mediaChapa = totalChapas ? totalDescida / totalChapas : 0;
+
+  const retidosAbertos = viagens
+    .filter(v=>v.statusRetido!=='recebido')
+    .reduce((s,v)=>s+Number(v.retido||0),0);
+
+  $('geral').innerHTML = `
+    <div class="row"><span>Viagens com custo fechado</span><strong>${totalCalculos}</strong></div>
+    <div class="row"><span>Custo total do caminhão</span><strong>${br(totalCaminhao)}</strong></div>
+    <div class="row"><span>Frete da subida</span><strong>${br(totalSubida)}</strong></div>
+    <div class="row"><span>Custo total das descidas</span><strong>${br(totalDescida)}</strong></div>
+    <div class="row"><span>Total de chapas</span><strong>${totalChapas}</strong></div>
+    <div class="row"><span>Total de m²</span><strong>${totalM2.toLocaleString('pt-BR')}</strong></div>
+    <div class="row"><span>Custo médio por chapa</span><strong>${br(mediaChapa)}</strong></div>
+    <div class="row"><span>Custo médio por m²</span><strong>${br(mediaM2)}</strong></div>
+    <div class="row"><span>Economia total</span><strong>${br(totalEconomia)}</strong></div>
+    <div class="row"><span>Retidos em aberto</span><strong>${br(retidosAbertos)}</strong></div>
+    ${totalCalculos===0?'<div class="note" style="margin-top:12px">O Geral passa a usar somente os cálculos salvos na aba Custos. Salve o custo de cada viagem para ela entrar aqui.</div>':''}
+  `;
+}
+function persist(){localStorage.setItem('bitruckCadernoViagens',JSON.stringify(viagens));localStorage.setItem('bitruckCadernoMotorista',JSON.stringify(movs))}
+function renderTudo(){renderResumo();renderHistorico();renderRetidos();renderCustoCaminhao();renderGeral()}
+function zerar(){if(confirm('Apagar todos os dados?')){localStorage.removeItem('bitruckCadernoViagens');localStorage.removeItem('bitruckCadernoMotorista');localStorage.removeItem('bitruckCustosCaminhao');location.reload()}}
+document.addEventListener('input',e=>{if(e.target.tagName==='INPUT')calc()});
+limpar();renderTudo();
+
+
+function preencherViagensCustos(){
+  const sel=document.getElementById('ctViagemSelecionada');
+  if(!sel) return;
+  const atualSel=sel.value;
+  sel.innerHTML='<option value="">Selecione...</option>'+
+    viagens.map(v=>`<option value="${v.id}">Viagem ${v.viagem}${v.data?' - '+v.data:''}</option>`).join('');
+  if(viagens.some(v=>v.id===atualSel)) sel.value=atualSel;
+}
+
+function puxarDadosViagem(){
+  const sel=document.getElementById('ctViagemSelecionada');
+  if(!sel || !sel.value) return;
+  const v=viagens.find(x=>x.id===sel.value);
+  if(!v) return;
+
+  // Puxa apenas os campos pedidos pelo usuário.
+  document.getElementById('ctCustoViagem').value = Number(v.custos || 0).toFixed(2);
+  const comissaoSalva = Number(v.comissao ?? v.comTotal ?? ((v.comSubida||0)+(v.comDescida||0)) ?? 0);
+  document.getElementById('ctComissao').value = comissaoSalva.toFixed(2);
+  document.getElementById('ctSubida').value = Number(v.frete || 0).toFixed(2);
+  document.getElementById('ctM2').value = Number(v.m2 || 0);
+  document.getElementById('ctChapas').value = Number(v.chapas || 0);
+  document.getElementById('ctValorTerceiro').value = Number(v.valorChapa || 173);
+
+  // Diesel pago em boleto e outros continuam manuais.
+  calcCustoCaminhao();
+}
+
+function calcCustoCaminhao(){
+  const get=id=>document.getElementById(id);
+  if(!get('ctCustoViagem')) return;
+  const nv=id=>Number(get(id).value||0);
+  const custoViagem=nv('ctCustoViagem');
+  const diesel=nv('ctDieselBoleto');
+  const comissao=nv('ctComissao');
+  const outros=nv('ctOutros');
+  const subida=nv('ctSubida');
+  const m2=nv('ctM2');
+  const chapas=nv('ctChapas');
+  const valorTerceiro=nv('ctValorTerceiro');
+  const total=custoViagem+diesel+comissao+outros;
+  const descida=total-subida;
+  const porM2=m2?descida/m2:0;
+  const porChapa=chapas?descida/chapas:0;
+  const terceiro=chapas*valorTerceiro;
+  const economia=terceiro-descida;
+  get('ctTotal').textContent=br(total);
+  get('ctDescida').textContent=br(descida);
+  get('ctPorM2').textContent=br(porM2);
+  get('ctPorChapa').textContent=br(porChapa);
+  get('ctTerceiro').textContent=br(terceiro);
+  get('ctEconomia').textContent=br(economia);
+  return {id:Date.now().toString(),data:new Date().toISOString().slice(0,10),custoViagem,diesel,comissao,outros,subida,m2,chapas,valorTerceiro,total,descida,porM2,porChapa,terceiro,economia};
+}
+
+function limparCustoCaminhao(){
+  const ids = ['ctCustoViagem','ctDieselBoleto','ctComissao','ctOutros','ctSubida','ctM2','ctChapas'];
+  ids.forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.value='';
+  });
+
+  const valorTerceiro=document.getElementById('ctValorTerceiro');
+  if(valorTerceiro) valorTerceiro.value=173;
+
+  const sel=document.getElementById('ctViagemSelecionada');
+  if(sel) sel.value='';
+
+  calcCustoCaminhao();
+}
+
+function salvarCustoCaminhao(){
+  const c = calcCustoCaminhao();
+  if(!c) return;
+
+  const viagemSel = document.getElementById('ctViagemSelecionada');
+  if(viagemSel && viagemSel.value){
+    const v = viagens.find(x=>x.id===viagemSel.value);
+    if(v){
+      c.viagemId = v.id;
+      c.viagem = v.viagem;
+    }
+  }
+
+  const temDados = c.custoViagem || c.diesel || c.comissao || c.outros || c.subida || c.m2 || c.chapas;
+  if(!temDados){
+    alert('Preencha os dados do cálculo antes de salvar.');
+    return;
+  }
+
+  custosCaminhao.unshift(c);
+  localStorage.setItem('bitruckCustosCaminhao', JSON.stringify(custosCaminhao));
+
+  limparCustoCaminhao();
+  renderCustoCaminhao();
+
+  const hist = document.getElementById('ctHistorico');
+  if(hist){
+    setTimeout(()=>hist.scrollIntoView({behavior:'smooth',block:'start'}), 50);
+  }
+}
+function excluirCustoCaminhao(id){
+  if(!confirm('Excluir este cálculo?'))return;
+  custosCaminhao=custosCaminhao.filter(c=>c.id!==id);
+  localStorage.setItem('bitruckCustosCaminhao',JSON.stringify(custosCaminhao));
+  renderCustoCaminhao();
+  renderGeral();
+}
+function renderCustoCaminhao(){
+  preencherViagensCustos();
+  calcCustoCaminhao();
+  const box=document.getElementById('ctHistorico'); if(!box)return;
+  box.innerHTML=custosCaminhao.length?custosCaminhao.map(c=>`
+    <div class="histItem">
+      <div class="histTop"><div><strong>${c.viagem ? 'Viagem '+c.viagem+' • ' : ''}${c.data}</strong><br><span class="muted">${c.chapas} chapas • ${c.m2} m²</span></div></div>
+      <div class="row"><span>Custo descida</span><strong>${br(c.descida)}</strong></div>
+      <div class="row"><span>Custo/m²</span><strong>${br(c.porM2)}</strong></div>
+      <div class="row"><span>Terceiro</span><strong>${br(c.terceiro)}</strong></div>
+      <div class="row"><span>Economia</span><strong class="green">${br(c.economia)}</strong></div>
+      <button class="btnRed" onclick="excluirCustoCaminhao('${c.id}')">Excluir</button>
+    </div>`).join(''):'<div class="muted">Nenhum cálculo salvo.</div>';
+}
+document.addEventListener('input',function(e){
+  if(e.target && e.target.id && e.target.id.startsWith('ct')) calcCustoCaminhao();
+});
+
+</script>
+</body></html>

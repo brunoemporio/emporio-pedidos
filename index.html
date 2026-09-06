@@ -51,6 +51,7 @@
     .material-row{display:flex;justify-content:space-between;gap:12px;background:#faf8f4;border:1px solid #e1dbd2;border-radius:16px;padding:12px;margin-bottom:8px}
     .material-row strong{font-size:15px}.material-row span{font-weight:bold}
     .cadastro-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}.cadastro-box{background:#faf8f4;border:1px solid #e1dbd2;border-radius:20px;padding:14px}.cadastro-form{display:grid;grid-template-columns:1fr auto;gap:8px;margin-bottom:12px}.cadastro-lista{max-height:430px;overflow:auto}.cadastro-item{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;background:#fff;border:1px solid #e1dbd2;border-radius:14px;padding:10px;margin-bottom:7px}.cadastro-item small{display:block;color:#777;margin-top:3px}.cadastro-item button{padding:8px 10px;font-size:12px}
+    .bitruck-card{padding:0;overflow:hidden}.bitruck-frame{display:block;width:100%;height:calc(100vh - 145px);min-height:650px;border:0;background:#f4f4f5}
     .historico-top{display:flex;gap:10px;align-items:end;flex-wrap:wrap;margin-bottom:12px}
     .historico-top .field{margin-bottom:0;min-width:210px;max-width:260px}
     .historico-resumo{background:#faf8f4;border:1px solid #e1dbd2;border-radius:18px;padding:14px;margin-bottom:10px}.historico-card{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;background:#f0ece5;border-radius:18px;padding:8px;margin:6px 0}.historico-card.pendente{background:#fff1f0}.historico-card.impresso{background:#e7f7e9}.historico-card .delivery{margin:0;text-decoration:none}.romaneio-status{display:inline-block;border-radius:999px;padding:4px 8px;font-size:12px;font-weight:bold;margin-left:6px;background:#f0ece5;color:#6b6258}.romaneio-status.pendente{background:#fee4e2;color:#b42318}.romaneio-status.impresso{background:#d1fadf;color:#166534}.btn-romaneio{background:#fff;color:#24211d;border:1px solid #e1dbd2;padding:10px 12px;font-size:13px;white-space:nowrap}
@@ -63,7 +64,7 @@
     .top-actions{display:flex;gap:10px;align-items:center}
     .btn-logout{background:#eee8de;color:#24211d;padding:10px 14px;border-radius:14px;font-size:13px}
 
-    .tabs-bottom{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid #e1dbd2;display:none;grid-template-columns:repeat(5,1fr);gap:0;z-index:50;box-shadow:0 -4px 18px rgba(0,0,0,.08)}
+    .tabs-bottom{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid #e1dbd2;display:none;grid-template-columns:repeat(6,1fr);gap:0;z-index:50;box-shadow:0 -4px 18px rgba(0,0,0,.08)}
     .tab-btn{border-radius:0;background:#fff;color:#777;padding:10px 4px;font-size:12px;line-height:1.15}
     .tab-btn strong{display:block;font-size:18px;margin-bottom:2px}
     .tab-btn.active{background:#24211d;color:white}
@@ -100,6 +101,7 @@
   <button class="tab-btn" data-tab="historico" onclick="mostrarAba('historico')"><strong>📦</strong>Histórico</button>
   <button class="tab-btn" data-tab="dashboard" onclick="mostrarAba('dashboard')"><strong>📊</strong>Dashboard</button>
   <button class="tab-btn" data-tab="cadastros" onclick="mostrarAba('cadastros')"><strong>👥</strong>Cadastros</button>
+  <button class="tab-btn" data-tab="bitruck" onclick="mostrarAba('bitruck')"><strong>🚛</strong>Bitruck</button>
 </nav>
 
 <section class="card tab-page active" id="aba-pedidos">
@@ -161,6 +163,9 @@
     <div class="cadastro-box"><h3>Pedras</h3><div class="cadastro-form"><input id="novaPedraCadastro" placeholder="Nome correto da pedra" onkeydown="if(event.key==='Enter')cadastrarNome('pedra')"><button class="btn-dark" onclick="cadastrarNome('pedra')">Cadastrar</button></div><div id="cadastroPedras" class="cadastro-lista"></div></div>
   </div>
 </section>
+<section class="card tab-page bitruck-card" id="aba-bitruck">
+  <iframe class="bitruck-frame" src="bitruck.html" title="Controle Bitruck"></iframe>
+</section>
 </div>
 
 <nav class="tabs-bottom">
@@ -169,6 +174,7 @@
   <button class="tab-btn" data-tab="historico" onclick="mostrarAba('historico')"><strong>📦</strong>Histórico</button>
   <button class="tab-btn" data-tab="dashboard" onclick="mostrarAba('dashboard')"><strong>📊</strong>Dashboard</button>
   <button class="tab-btn" data-tab="cadastros" onclick="mostrarAba('cadastros')"><strong>👥</strong>Cadastros</button>
+  <button class="tab-btn" data-tab="bitruck" onclick="mostrarAba('bitruck')"><strong>🚛</strong>Bitruck</button>
 </nav>
 
 <div class="modal-bg" id="modalBg"><div class="modal">
