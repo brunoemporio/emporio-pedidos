@@ -6,6 +6,7 @@
   <title>Empório - Pedidos e Entregas</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="produtos-insumos.js"></script>
   <style>
     *{box-sizing:border-box}
     body{margin:0;font-family:Arial,sans-serif;background:#f3f0ea;color:#24211d}
@@ -50,8 +51,9 @@
     .materiais-lista{margin-top:16px;border-top:1px solid #e1dbd2;padding-top:14px}
     .material-row{display:flex;justify-content:space-between;gap:12px;background:#faf8f4;border:1px solid #e1dbd2;border-radius:16px;padding:12px;margin-bottom:8px}
     .material-row strong{font-size:15px}.material-row span{font-weight:bold}
-    .cadastro-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}.cadastro-box{background:#faf8f4;border:1px solid #e1dbd2;border-radius:20px;padding:14px}.cadastro-form{display:grid;grid-template-columns:1fr auto;gap:8px;margin-bottom:12px}.cadastro-lista{max-height:430px;overflow:auto}.cadastro-item{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;background:#fff;border:1px solid #e1dbd2;border-radius:14px;padding:10px;margin-bottom:7px}.cadastro-item small{display:block;color:#777;margin-top:3px}.cadastro-item button{padding:8px 10px;font-size:12px}
+    .cadastro-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}.cadastro-box{background:#faf8f4;border:1px solid #e1dbd2;border-radius:20px;padding:14px}.cadastro-form{display:grid;grid-template-columns:1fr auto;gap:8px;margin-bottom:12px}.cadastro-insumo-form{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}.cadastro-insumo-form .full{grid-column:1/-1}.cadastro-lista{max-height:430px;overflow:auto}.cadastro-item{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;background:#fff;border:1px solid #e1dbd2;border-radius:14px;padding:10px;margin-bottom:7px}.cadastro-item small{display:block;color:#777;margin-top:3px}.cadastro-item button{padding:8px 10px;font-size:12px}
     .bitruck-card{padding:0;overflow:hidden}.bitruck-frame{display:block;width:100%;height:calc(100vh - 145px);min-height:650px;border:0;background:#f4f4f5}
+    .insumo-item-grid{display:grid;grid-template-columns:2fr .7fr 1fr 1fr;gap:10px}.insumo-toolbar{display:flex;gap:10px;align-items:end;flex-wrap:wrap;margin:16px 0 10px}.insumo-toolbar .field{margin:0;min-width:190px}.insumo-pedido{border:1px solid #e1dbd2;border-radius:20px;padding:14px;margin-bottom:10px;background:#faf8f4}.insumo-pedido-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}.insumo-pedido h3{margin:0 0 5px}.insumo-acoes{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.status-insumo{display:inline-block;border-radius:999px;padding:5px 9px;font-size:12px;font-weight:bold}.status-insumo.pendente{background:#fff1c2;color:#7a5600}.status-insumo.pago{background:#d1fadf;color:#166534}.status-insumo.cancelado{background:#fee4e2;color:#b42318}
     .historico-top{display:flex;gap:10px;align-items:end;flex-wrap:wrap;margin-bottom:12px}
     .historico-top .field{margin-bottom:0;min-width:210px;max-width:260px}
     .historico-resumo{background:#faf8f4;border:1px solid #e1dbd2;border-radius:18px;padding:14px;margin-bottom:10px}.historico-card{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;background:#f0ece5;border-radius:18px;padding:8px;margin:6px 0}.historico-card.pendente{background:#fff1f0}.historico-card.impresso{background:#e7f7e9}.historico-card .delivery{margin:0;text-decoration:none}.romaneio-status{display:inline-block;border-radius:999px;padding:4px 8px;font-size:12px;font-weight:bold;margin-left:6px;background:#f0ece5;color:#6b6258}.romaneio-status.pendente{background:#fee4e2;color:#b42318}.romaneio-status.impresso{background:#d1fadf;color:#166534}.btn-romaneio{background:#fff;color:#24211d;border:1px solid #e1dbd2;padding:10px 12px;font-size:13px;white-space:nowrap}
@@ -64,7 +66,7 @@
     .top-actions{display:flex;gap:10px;align-items:center}
     .btn-logout{background:#eee8de;color:#24211d;padding:10px 14px;border-radius:14px;font-size:13px}
 
-    .tabs-bottom{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid #e1dbd2;display:none;grid-template-columns:repeat(6,1fr);gap:0;z-index:50;box-shadow:0 -4px 18px rgba(0,0,0,.08)}
+    .tabs-bottom{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid #e1dbd2;display:none;grid-template-columns:repeat(7,1fr);gap:0;z-index:50;box-shadow:0 -4px 18px rgba(0,0,0,.08)}
     .tab-btn{border-radius:0;background:#fff;color:#777;padding:10px 4px;font-size:12px;line-height:1.15}
     .tab-btn strong{display:block;font-size:18px;margin-bottom:2px}
     .tab-btn.active{background:#24211d;color:white}
@@ -73,7 +75,7 @@
     .desktop-tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
     .desktop-tabs .tab-btn{border-radius:16px;background:#eee8de;color:#24211d;padding:12px 16px;font-size:14px}
     .desktop-tabs .tab-btn.active{background:#24211d;color:white}
-    @media(max-width:850px){body{padding-bottom:76px}.grid2,.row,.cadastro-grid{grid-template-columns:1fr}.item-grid{grid-template-columns:1fr 1fr}.item-grid .mobile-full{grid-column:1/-1}.stats{grid-template-columns:1fr 1fr}.actions4{grid-template-columns:1fr}.brand{font-size:13px}.total{display:block}.btn-save{width:100%;margin-top:10px}.historico-top{display:block}.historico-top .field{max-width:100%;margin-bottom:10px}.historico-top button{width:100%;margin-bottom:10px}.historico-card{grid-template-columns:1fr}.historico-card .btn-romaneio{width:100%}.desktop-tabs{display:none}.tabs-bottom{display:grid}}
+    @media(max-width:850px){body{padding-bottom:76px}.grid2,.row,.cadastro-grid{grid-template-columns:1fr}.item-grid,.insumo-item-grid{grid-template-columns:1fr 1fr}.item-grid .mobile-full,.insumo-item-grid .insumo-nome{grid-column:1/-1}.stats{grid-template-columns:1fr 1fr}.actions4{grid-template-columns:1fr}.brand{font-size:13px}.total{display:block}.btn-save{width:100%;margin-top:10px}.historico-top{display:block}.historico-top .field{max-width:100%;margin-bottom:10px}.historico-top button{width:100%;margin-bottom:10px}.historico-card{grid-template-columns:1fr}.historico-card .btn-romaneio{width:100%}.desktop-tabs{display:none}.tabs-bottom{display:grid}.tabs-bottom .tab-btn{font-size:9px;padding:8px 1px}.insumo-toolbar{display:block}.insumo-toolbar .field{margin-bottom:8px}.insumo-pedido-head{display:block}}
   </style>
 </head>
 <body>
@@ -91,6 +93,7 @@
 
 <datalist id="listaClientes"></datalist>
 <datalist id="listaMateriais"></datalist>
+<datalist id="listaInsumos"></datalist>
 
 <div class="wrap" id="appRoot" style="display:none">
 <header><div><h1>Pedidos e Entregas</h1><div class="sub">Sistema Empório para chapas, frete, PDF e faturamento</div></div><div class="top-actions"><div class="brand">Empório</div><button class="btn-logout" onclick="sairDoSistema()">Sair</button></div></header>
@@ -99,6 +102,7 @@
   <button class="tab-btn active" data-tab="pedidos" onclick="mostrarAba('pedidos')"><strong>📋</strong>Pedidos</button>
   <button class="tab-btn" data-tab="entregas" onclick="mostrarAba('entregas')"><strong>🚚</strong>Entregas</button>
   <button class="tab-btn" data-tab="historico" onclick="mostrarAba('historico')"><strong>📦</strong>Histórico</button>
+  <button class="tab-btn" data-tab="insumos" onclick="mostrarAba('insumos')"><strong>🧰</strong>Insumos</button>
   <button class="tab-btn" data-tab="dashboard" onclick="mostrarAba('dashboard')"><strong>📊</strong>Dashboard</button>
   <button class="tab-btn" data-tab="cadastros" onclick="mostrarAba('cadastros')"><strong>👥</strong>Cadastros</button>
   <button class="tab-btn" data-tab="bitruck" onclick="mostrarAba('bitruck')"><strong>🚛</strong>Bitruck</button>
@@ -118,6 +122,19 @@
   <div class="field" style="max-width:260px"><label>Frete do pedido</label><input id="fretePedido" inputmode="decimal" placeholder="" oninput="calcular()"></div>
   <div class="total"><div><small>Subtotal chapas</small><strong id="subtotalPedido">R$ 0,00</strong><small>Total com frete</small><strong id="totalPedido">R$ 0,00</strong></div><button class="btn-save" onclick="salvarPedido()" id="btnSalvar">Salvar pedido</button></div>
   <button class="btn-light" style="width:100%;margin-top:10px;display:none" id="btnCancelarEdicao" onclick="limparFormulario()">Cancelar edição</button>
+</section>
+
+<section class="card tab-page" id="aba-insumos">
+  <h2>Venda de insumos</h2>
+  <p class="muted">Módulo separado dos pedidos de pedras.</p>
+  <div class="row"><div><label>Cliente</label><input id="insumoCliente" list="listaClientes" placeholder="Escolha o cliente cadastrado"></div><div><label>Data da venda</label><input id="insumoData" type="date"></div></div>
+  <div class="field"><label>Observação</label><input id="insumoObservacao" placeholder="Opcional"></div>
+  <div id="insumoItens"></div>
+  <button class="btn-add" onclick="adicionarItemInsumo()">+ Adicionar insumo</button>
+  <div class="total"><div><small>Total da venda</small><strong id="insumoTotal">R$ 0,00</strong></div><button class="btn-save" id="btnSalvarInsumo" onclick="salvarPedidoInsumo()">Salvar venda</button></div>
+  <div class="stats" style="margin-top:16px"><div class="stat"><small>Total vendido</small><strong id="insumoTotalVendido">R$ 0,00</strong></div><div class="stat"><small>Total pago</small><strong id="insumoTotalPago">R$ 0,00</strong></div><div class="stat"><small>A receber</small><strong id="insumoTotalReceber">R$ 0,00</strong></div></div>
+  <div class="insumo-toolbar"><div class="field"><label>Mês</label><input id="mesInsumos" type="month" onchange="renderInsumos()"></div><div class="field"><label>Buscar cliente ou insumo</label><input id="buscaInsumos" oninput="renderInsumos()" placeholder="Digite para buscar"></div><div class="field"><label>Status do pagamento</label><select id="filtroStatusInsumo" onchange="renderInsumos()"><option value="todos">Todos</option><option value="pendente">Pendente de pagamento</option><option value="pago">Pago</option><option value="cancelado">Cancelado</option></select></div></div>
+  <div id="listaPedidosInsumos"></div>
 </section>
 
 <section class="card tab-page" id="aba-entregas">
@@ -161,6 +178,7 @@
   <div class="cadastro-grid">
     <div class="cadastro-box"><h3>Clientes</h3><div class="cadastro-form"><input id="novoClienteCadastro" placeholder="Nome correto do cliente" onkeydown="if(event.key==='Enter')cadastrarNome('cliente')"><button class="btn-dark" onclick="cadastrarNome('cliente')">Cadastrar</button></div><div id="cadastroClientes" class="cadastro-lista"></div></div>
     <div class="cadastro-box"><h3>Pedras</h3><div class="cadastro-form"><input id="novaPedraCadastro" placeholder="Nome correto da pedra" onkeydown="if(event.key==='Enter')cadastrarNome('pedra')"><button class="btn-dark" onclick="cadastrarNome('pedra')">Cadastrar</button></div><div id="cadastroPedras" class="cadastro-lista"></div></div>
+    <div class="cadastro-box"><h3>Insumos</h3><input type="hidden" id="editandoCadastroInsumo"><div class="cadastro-insumo-form"><input class="full" id="cadastroInsumoNome" placeholder="Nome do produto"><select id="cadastroInsumoUnidade"><option>Unidade</option><option>Pacote</option><option>Caixa</option><option>Kit</option><option>Litro</option><option>Quilo</option><option>Metro</option><option>Rolo</option><option>Par</option></select><input id="cadastroInsumoPreco" inputmode="decimal" placeholder="Preço"><button class="btn-dark full" id="btnCadastroInsumo" onclick="salvarCadastroInsumo()">Cadastrar produto</button><button class="btn-light full" id="btnCancelarCadastroInsumo" style="display:none" onclick="limparCadastroInsumo()">Cancelar edição</button></div><div id="cadastroInsumos" class="cadastro-lista"></div></div>
   </div>
 </section>
 <section class="card tab-page bitruck-card" id="aba-bitruck">
@@ -172,6 +190,7 @@
   <button class="tab-btn active" data-tab="pedidos" onclick="mostrarAba('pedidos')"><strong>📋</strong>Pedidos</button>
   <button class="tab-btn" data-tab="entregas" onclick="mostrarAba('entregas')"><strong>🚚</strong>Entregas</button>
   <button class="tab-btn" data-tab="historico" onclick="mostrarAba('historico')"><strong>📦</strong>Histórico</button>
+  <button class="tab-btn" data-tab="insumos" onclick="mostrarAba('insumos')"><strong>🧰</strong>Insumos</button>
   <button class="tab-btn" data-tab="dashboard" onclick="mostrarAba('dashboard')"><strong>📊</strong>Dashboard</button>
   <button class="tab-btn" data-tab="cadastros" onclick="mostrarAba('cadastros')"><strong>👥</strong>Cadastros</button>
   <button class="tab-btn" data-tab="bitruck" onclick="mostrarAba('bitruck')"><strong>🚛</strong>Bitruck</button>
@@ -227,6 +246,7 @@ const dias=["A definir","Segunda","Terça","Quarta","Quinta","Sexta"];
 const periodos=["Manhã","Tarde","A definir"];
 let itemId=1,pedidoAbertoId=null;
 let pedidos=[];
+let pedidosInsumos=[],insumoItemId=1,catalogoInsumos=[];
 let cadastroRows=[],clientesCatalogo=[],pedrasCatalogo=[];
 let historicoAberto=false;
 
@@ -238,6 +258,7 @@ function mostrarAba(nome){
  if(nome==="dashboard") renderDashboard();
  if(nome==="historico") renderHistorico();
  if(nome==="cadastros") renderCadastros();
+ if(nome==="insumos") renderInsumos();
  window.scrollTo({top:0,behavior:"smooth"});
 }
 
@@ -262,6 +283,13 @@ function atualizarListaMateriais(){
  const nomes=pedrasCatalogo;
  lista.innerHTML=nomes.map(nome=>`<option value="${nome.replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;")}"></option>`).join("");
 }
+function atualizarListaInsumos(){
+ const lista=document.getElementById("listaInsumos");if(!lista)return;
+ const nomes=[...new Map([...catalogoInsumos.map(p=>p.nome),...pedidosInsumos.flatMap(p=>(p.itens||[]).map(i=>String(i.nome||"").trim()))].filter(Boolean).map(n=>[textoBusca(n),n])).values()].sort((a,b)=>a.localeCompare(b,"pt-BR"));
+ lista.innerHTML=nomes.map(nome=>`<option value="${escaparHTML(nome)}"></option>`).join("");
+}
+function aplicarProdutoInsumo(input){const produto=catalogoInsumos.find(p=>textoBusca(p.nome)===textoBusca(input.value));if(!produto)return;const item=input.closest(".insumo-item");if(!item)return;input.value=produto.nome;item.querySelector(".insumo-unidade").value=produto.unidade||"Unidade";item.querySelector(".insumo-valor").value=String(Number(produto.preco)||0).replace(".",",");calcularInsumos()}
+function reconstruirCatalogoInsumos(){const mapa=new Map();(window.CATALOGO_INSUMOS||[]).forEach(p=>mapa.set(textoBusca(p.nome),{...p,origem:"csv",chaveOriginal:textoBusca(p.nome)}));cadastroRows.filter(r=>r.status==="cadastro_insumo").forEach(r=>{const item=Array.isArray(r.itens)&&r.itens[0]?r.itens[0]:{};const nome=String(item.nome||r.cliente||"").trim();if(!nome)return;const chaveOriginal=item.chaveOriginal||textoBusca(nome);mapa.delete(chaveOriginal);mapa.set(textoBusca(nome),{nome,codigo:item.codigo||"",unidade:item.unidade||"Unidade",preco:Number(item.preco??item.valorUnitario)||0,origem:"editado",chaveOriginal,idCadastro:r.id})});catalogoInsumos=[...mapa.values()].sort((a,b)=>a.nome.localeCompare(b.nome,"pt-BR"))}
 function listaCanonica(valores,registros,tipo){
  const mapa=new Map();
  valores.map(v=>String(v||"").trim()).filter(Boolean).forEach(nome=>{const chave=textoBusca(nome);if(chave&&!mapa.has(chave))mapa.set(chave,nome)});
@@ -275,9 +303,13 @@ function reconstruirCadastros(){
 function nomeDoCatalogo(tipo,valor){const lista=tipo==="cliente"?clientesCatalogo:pedrasCatalogo;const chave=textoBusca(valor);return lista.find(nome=>textoBusca(nome)===chave)||""}
 function renderCadastros(){
  const montar=(lista,tipo)=>lista.length?lista.map(nome=>{const chave=encodeURIComponent(textoBusca(nome)).replace(/'/g,"%27");const ocorrencias=tipo==="cliente"?pedidos.filter(p=>textoBusca(p.cliente)===textoBusca(nome)).length:pedidos.filter(p=>(p.itens||[]).some(i=>textoBusca(i.chapa)===textoBusca(nome))).length;return `<div class="cadastro-item"><div><strong>${escaparHTML(nome)}</strong><small>${ocorrencias} pedido${ocorrencias===1?"":"s"}</small></div><button class="btn-light" onclick="renomearCadastro('${tipo}','${chave}')">Renomear / unir</button></div>`}).join(""):`<p class="muted">Nenhum cadastro.</p>`;
- const clientes=document.getElementById("cadastroClientes"),pedras=document.getElementById("cadastroPedras");
+ const clientes=document.getElementById("cadastroClientes"),pedras=document.getElementById("cadastroPedras"),insumos=document.getElementById("cadastroInsumos");
  if(clientes)clientes.innerHTML=montar(clientesCatalogo,"cliente");if(pedras)pedras.innerHTML=montar(pedrasCatalogo,"pedra");
+ if(insumos)insumos.innerHTML=catalogoInsumos.length?catalogoInsumos.map(p=>{const chave=encodeURIComponent(textoBusca(p.nome)).replace(/'/g,"%27");return `<div class="cadastro-item"><div><strong>${escaparHTML(p.nome)}</strong><small>${escaparHTML(p.unidade)} • ${moeda(p.preco)}${p.codigo?` • Cód. ${escaparHTML(p.codigo)}`:""}</small></div><button class="btn-light" onclick="editarCadastroInsumo('${chave}')">Editar</button></div>`}).join(""):`<p class="muted">Nenhum insumo cadastrado.</p>`;
 }
+function limparCadastroInsumo(){editandoCadastroInsumo.value="";cadastroInsumoNome.value="";cadastroInsumoUnidade.value="Unidade";cadastroInsumoPreco.value="";btnCadastroInsumo.textContent="Cadastrar produto";btnCancelarCadastroInsumo.style.display="none"}
+function editarCadastroInsumo(chaveCodificada){const chave=decodeURIComponent(chaveCodificada),produto=catalogoInsumos.find(p=>textoBusca(p.nome)===chave);if(!produto)return;editandoCadastroInsumo.value=produto.chaveOriginal||chave;cadastroInsumoNome.value=produto.nome;cadastroInsumoUnidade.value=produto.unidade||"Unidade";cadastroInsumoPreco.value=String(Number(produto.preco)||0).replace(".",",");btnCadastroInsumo.textContent="Salvar alteração";btnCancelarCadastroInsumo.style.display="block";cadastroInsumoNome.focus()}
+async function salvarCadastroInsumo(){const nome=cadastroInsumoNome.value.replace(/\s+/g," ").trim(),unidade=cadastroInsumoUnidade.value,preco=numero(cadastroInsumoPreco.value),chaveOriginal=editandoCadastroInsumo.value||textoBusca(nome);if(!nome){alert("Digite o nome do produto.");return}const existente=catalogoInsumos.find(p=>textoBusca(p.nome)===textoBusca(nome)&&p.chaveOriginal!==chaveOriginal);if(existente){alert("Já existe um produto com este nome.");return}const item={nome,unidade,preco,codigo:"",chaveOriginal};const registroExistente=cadastroRows.find(r=>r.status==="cadastro_insumo"&&((r.itens||[])[0]?.chaveOriginal||textoBusca(r.cliente))===chaveOriginal);let resultado;if(registroExistente)resultado=await db.from("pedidos").update({cliente:nome,itens:[item]}).eq("id",registroExistente.id);else resultado=await db.from("pedidos").insert({numero:"CADI-"+Date.now(),cliente:nome,dia:"Insumos",observacao:"Cadastro de insumo",itens:[item],subtotal:0,frete:0,total:0,entregue:false,data:dataISO(),data_entrega:null,status:"cadastro_insumo"});if(resultado.error){alert("Erro ao salvar produto: "+resultado.error.message);return}if(textoBusca(nome)!==chaveOriginal){for(const p of pedidosInsumos.filter(p=>(p.itens||[]).some(i=>textoBusca(i.nome)===chaveOriginal))){const itens=p.itens.map(i=>textoBusca(i.nome)===chaveOriginal?{...i,nome}:i);await db.from("pedidos").update({itens}).eq("id",p.id)}}limparCadastroInsumo();await carregarPedidos();mostrarAba("cadastros")}
 async function inserirCadastro(tipo,nome){
  const registro={numero:"CAD-"+Date.now(),cliente:nome,dia:"A definir",observacao:"Cadastro de "+tipo,itens:[],subtotal:0,frete:0,total:0,entregue:false,data:dataISO(),data_entrega:null,status:"cadastro_"+tipo};
  return await db.from("pedidos").insert(registro).select().single();
@@ -337,15 +369,20 @@ function dbParaPedido(row){
 function pedidoParaDb(p){
  return {numero:p.numero,cliente:p.cliente,dia:p.dia,observacao:p.observacao,itens:p.itens||[],subtotal:p.subtotal||0,frete:p.frete||0,total:p.total||0,entregue:!!p.entregue,data:p.data||dataISO(),data_entrega:p.dataEntrega||null,status:p.status||"confirmado"};
 }
+function dbParaPedidoInsumo(row){const statusOriginal=String(row.status||"insumo_pendente").replace("insumo_","");return {id:Number(row.id),numero:row.numero||String(row.id).padStart(4,"0"),cliente:row.cliente||"",data:row.data||(row.created_at?String(row.created_at).slice(0,10):dataISO()),observacao:row.observacao||"",itens:Array.isArray(row.itens)?row.itens:[],total:Number(row.total)||0,status:statusOriginal==="recebido"?"pago":statusOriginal,dataPagamento:row.data_entrega||""}}
+function pedidoInsumoParaDb(p){return {numero:p.numero,cliente:p.cliente,dia:"Insumos",observacao:p.observacao||"",itens:p.itens||[],subtotal:p.total||0,frete:0,total:p.total||0,entregue:p.status==="pago",data:p.data||dataISO(),data_entrega:p.dataPagamento||null,status:"insumo_"+(p.status||"pendente")}}
 async function carregarPedidos(){
  const {data,error}=await db.from("pedidos").select("*").order("id",{ascending:false});
  if(error){alert("Erro ao carregar pedidos do Supabase: "+error.message);return}
  const todas=data||[];
- cadastroRows=todas.filter(r=>r.status==="cadastro_cliente"||r.status==="cadastro_pedra");
- pedidos=todas.filter(r=>r.status!=="cadastro_cliente"&&r.status!=="cadastro_pedra").map(dbParaPedido);
+ cadastroRows=todas.filter(r=>r.status==="cadastro_cliente"||r.status==="cadastro_pedra"||r.status==="cadastro_insumo");
+ pedidosInsumos=todas.filter(r=>String(r.status||"").startsWith("insumo_")).map(dbParaPedidoInsumo);
+ pedidos=todas.filter(r=>r.status!=="cadastro_cliente"&&r.status!=="cadastro_pedra"&&r.status!=="cadastro_insumo"&&!String(r.status||"").startsWith("insumo_")).map(dbParaPedido);
  reconstruirCadastros();
+ reconstruirCatalogoInsumos();
  atualizarListaClientes();
  atualizarListaMateriais();
+ atualizarListaInsumos();
  renderTudo();
 }
 function criarItem(id,dados={}){
@@ -395,6 +432,28 @@ async function salvarPedido(){
  limparFormulario(); await carregarPedidos();
 }
 function limparFormulario(){editandoId.value="";formTitulo.textContent="Novo pedido";btnSalvar.textContent="Salvar pedido";btnSalvar.disabled=false;btnCancelarEdicao.style.display="none";cliente.value="";observacao.value="";diaEntrega.value="A definir";periodoEntrega.value="A definir";fretePedido.value="";itens.innerHTML="";criarItem(itemId++)}
+function criarItemInsumo(dados={}){const id=insumoItemId++;const div=document.createElement("div");div.className="item insumo-item";div.dataset.id=id;div.innerHTML=`<div class="item-title"><span>Insumo</span><button class="btn-del" type="button" onclick="removerItemInsumo(${id})">Remover</button></div><div class="insumo-item-grid"><div class="insumo-nome"><label>Nome do insumo</label><input class="insumo-nome-input" list="listaInsumos" placeholder="Digite parte do nome" oninput="calcularInsumos()" onchange="aplicarProdutoInsumo(this)"></div><div><label>Quantidade</label><input class="insumo-qtd" inputmode="decimal" oninput="calcularInsumos()"></div><div><label>Unidade</label><select class="insumo-unidade"><option>Unidade</option><option>Pacote</option><option>Caixa</option><option>Kit</option><option>Litro</option><option>Quilo</option><option>Metro</option><option>Rolo</option><option>Par</option></select></div><div><label>Valor unitário</label><input class="insumo-valor" inputmode="decimal" oninput="calcularInsumos()"></div></div><div class="calc">Total do item: <strong class="insumo-item-total">R$ 0,00</strong></div>`;insumoItens.appendChild(div);div.querySelector(".insumo-nome-input").value=dados.nome||"";div.querySelector(".insumo-qtd").value=dados.quantidade||1;div.querySelector(".insumo-unidade").value=dados.unidade||"Unidade";div.querySelector(".insumo-valor").value=dados.valorUnitario?String(dados.valorUnitario).replace(".",","):"";calcularInsumos()}
+function adicionarItemInsumo(){criarItemInsumo()}
+function removerItemInsumo(id){if(document.querySelectorAll(".insumo-item").length<=1)return;document.querySelector(`.insumo-item[data-id="${id}"]`)?.remove();calcularInsumos()}
+function coletarItensInsumos(){return [...document.querySelectorAll(".insumo-item")].map(el=>{const nome=el.querySelector(".insumo-nome-input").value.replace(/\s+/g," ").trim(),quantidade=numero(el.querySelector(".insumo-qtd").value)||1,unidade=el.querySelector(".insumo-unidade").value,valorUnitario=numero(el.querySelector(".insumo-valor").value);return {nome,quantidade,unidade,valorUnitario,total:quantidade*valorUnitario}})}
+function calcularInsumos(){let total=0;document.querySelectorAll(".insumo-item").forEach(el=>{const qtd=numero(el.querySelector(".insumo-qtd").value)||1,valor=numero(el.querySelector(".insumo-valor").value),valorTotal=qtd*valor;total+=valorTotal;el.querySelector(".insumo-item-total").textContent=moeda(valorTotal)});if(document.getElementById("insumoTotal"))insumoTotal.textContent=moeda(total)}
+function limparFormularioInsumo(){insumoCliente.value="";insumoData.value=dataISO();insumoObservacao.value="";insumoItens.innerHTML="";criarItemInsumo();btnSalvarInsumo.disabled=false;btnSalvarInsumo.textContent="Salvar venda"}
+async function salvarPedidoInsumo(){let cliente=insumoCliente.value.trim();const cadastrado=nomeDoCatalogo("cliente",cliente);if(!cadastrado){alert("Escolha um cliente cadastrado.");return}cliente=cadastrado;const itens=coletarItensInsumos();if(itens.some(i=>!i.nome)){alert("Digite o nome de todos os insumos.");return}if(itens.some(i=>i.quantidade<=0)){alert("Informe uma quantidade válida.");return}const total=itens.reduce((s,i)=>s+i.total,0);btnSalvarInsumo.disabled=true;btnSalvarInsumo.textContent="Salvando...";const pedido={cliente,data:insumoData.value||dataISO(),observacao:insumoObservacao.value,itens,total,status:"pendente",dataPagamento:null};const {data,error}=await db.from("pedidos").insert(pedidoInsumoParaDb(pedido)).select().single();if(error){alert("Erro ao salvar venda de insumos: "+error.message);btnSalvarInsumo.disabled=false;btnSalvarInsumo.textContent="Salvar venda";return}if(data&&!data.numero)await db.from("pedidos").update({numero:"I"+String(data.id).padStart(4,"0")}).eq("id",data.id);limparFormularioInsumo();await carregarPedidos();mostrarAba("insumos")}
+function dataBR(v){if(!v)return"";return String(v).slice(0,10).split("-").reverse().join("/")}
+function renderInsumos(){
+ const mes=document.getElementById("mesInsumos")?.value||"";
+ const pedidosDoMes=pedidosInsumos.filter(p=>!mes||String(p.data||"").slice(0,7)===mes);
+ const validos=pedidosDoMes.filter(p=>p.status!=="cancelado"),totalVendido=validos.reduce((s,p)=>s+p.total,0),totalPago=validos.filter(p=>p.status==="pago").reduce((s,p)=>s+p.total,0),totalReceber=validos.filter(p=>p.status!=="pago").reduce((s,p)=>s+p.total,0);
+ const elVendido=document.getElementById("insumoTotalVendido"),elPago=document.getElementById("insumoTotalPago"),elReceber=document.getElementById("insumoTotalReceber");if(elVendido)elVendido.textContent=moeda(totalVendido);if(elPago)elPago.textContent=moeda(totalPago);if(elReceber)elReceber.textContent=moeda(totalReceber);
+ const busca=textoBusca(document.getElementById("buscaInsumos")?.value||""),filtro=document.getElementById("filtroStatusInsumo")?.value||"todos";
+ const prioridade={pendente:0,pago:1,cancelado:2};
+ const arr=pedidosDoMes.filter(p=>filtro==="todos"||p.status===filtro).filter(p=>!busca||textoBusca(p.cliente).includes(busca)||(p.itens||[]).some(i=>textoBusca(i.nome).includes(busca))).sort((a,b)=>(prioridade[a.status]??1)-(prioridade[b.status]??1)||String(b.data).localeCompare(String(a.data))||b.id-a.id);
+ const destino=document.getElementById("listaPedidosInsumos");if(!destino)return;
+ destino.innerHTML=arr.length?arr.map(p=>`<div class="insumo-pedido"><div class="insumo-pedido-head"><div><h3>#${escaparHTML(p.numero||p.id)} - ${escaparHTML(p.cliente)}</h3><span class="muted">Venda: ${dataBR(p.data)}${p.dataPagamento?` • Pagamento: ${dataBR(p.dataPagamento)}`:""}</span></div><span class="status-insumo ${p.status}">${p.status==="pago"?"Pago":p.status==="cancelado"?"Cancelado":"Pendente de pagamento"}</span></div><div class="detail-item">${(p.itens||[]).map(i=>`${escaparHTML(i.nome)} — ${i.quantidade} ${escaparHTML(i.unidade)} × ${moeda(i.valorUnitario)} = <strong>${moeda(i.total)}</strong>`).join("<br>")}</div>${p.observacao?`<p class="muted">Obs: ${escaparHTML(p.observacao)}</p>`:""}<strong>Total: ${moeda(p.total)}</strong><div class="insumo-acoes">${p.status!=="pago"?`<button class="btn-dark" onclick="alterarStatusInsumo(${p.id},'pago')">Marcar como pago</button>`:`<button class="btn-light" onclick="alterarStatusInsumo(${p.id},'pendente')">Voltar para pendente</button>`}<button class="btn-light" onclick="baixarPDFInsumo(${p.id})">Baixar PDF</button>${p.status!=="cancelado"?`<button class="btn-light" onclick="alterarStatusInsumo(${p.id},'cancelado')">Cancelar</button>`:""}<button class="btn-red" onclick="excluirInsumo(${p.id})">Excluir</button></div></div>`).join(""):`<p class="muted">Nenhuma venda de insumos encontrada neste mês.</p>`
+}
+async function alterarStatusInsumo(id,status){const p=pedidosInsumos.find(x=>x.id===id);if(!p)return;const dataPagamento=status==="pago"?(p.dataPagamento||dataISO()):p.dataPagamento||null;const {error}=await db.from("pedidos").update({status:"insumo_"+status,entregue:status==="pago",data_entrega:dataPagamento}).eq("id",id);if(error){alert("Erro ao alterar status do pagamento: "+error.message);return}await carregarPedidos();renderInsumos()}
+async function excluirInsumo(id){if(!confirm("Excluir esta venda de insumos?"))return;const {error}=await db.from("pedidos").delete().eq("id",id);if(error){alert("Erro ao excluir: "+error.message);return}await carregarPedidos();renderInsumos()}
+function baixarPDFInsumo(id){const p=pedidosInsumos.find(x=>x.id===id);if(!p)return;const {jsPDF}=window.jspdf,doc=new jsPDF();let y=16;const status=p.status==="pago"?"Pago":p.status==="cancelado"?"Cancelado":"Pendente de pagamento";doc.setFont("helvetica","bold");doc.setFontSize(16);doc.text("Empório - Venda de Insumos",15,y);y+=10;doc.setFontSize(15);doc.text("Cliente: "+p.cliente,15,y);y+=8;doc.setFontSize(10);doc.setFont("helvetica","normal");doc.text("Venda: "+dataBR(p.data)+" | Pedido nº "+(p.numero||p.id)+" | Status: "+status,15,y);y+=7;if(p.dataPagamento){doc.text("Pagamento recebido em: "+dataBR(p.dataPagamento),15,y);y+=7}if(p.observacao){y=textoPDF(doc,"Observação: "+p.observacao,15,y,180);y+=3}y+=3;doc.setFont("helvetica","bold");doc.text("Insumo",15,y);doc.text("Qtd / Un.",105,y);doc.text("Vlr unit.",145,y);doc.text("Total",180,y);y+=5;doc.line(15,y,200,y);y+=7;doc.setFont("helvetica","normal");(p.itens||[]).forEach(i=>{if(y>270){doc.addPage();y=18}doc.text(String(i.nome||"").slice(0,42),15,y);doc.text(`${i.quantidade} ${i.unidade}`,105,y);doc.text(moeda(i.valorUnitario).replace("R$",""),145,y);doc.text(moeda(i.total).replace("R$",""),180,y);y+=8});y+=5;doc.line(130,y,200,y);y+=8;doc.setFont("helvetica","bold");doc.text("Total: "+moeda(p.total),140,y);doc.save("insumos-"+(p.numero||p.id)+"-"+textoArquivo(p.cliente)+".pdf")}
 function abrirModal(id){pedidoAbertoId=id; const p=pedidos.find(x=>x.id===id); if(!p)return;const entrega=partesEntrega(p.dia);modalCliente.textContent=p.cliente;modalNumero.textContent="Pedido nº "+(p.numero||p.id);modalDia.textContent=entrega.periodo==="A definir"?entrega.dia:`${entrega.dia} - ${entrega.periodo}`;modalStatus.textContent=p.entregue?"Entregue":(p.status==="previo"?"Prévio":"Pendente");modalStatus.className="pill"+(p.status==="previo"?" status-previo":"");modalObs.textContent=p.observacao?"Obs: "+p.observacao:"";modalTrocarDia.value=entrega.dia;modalTrocarPeriodo.value=entrega.periodo;modalItens.innerHTML=(p.itens||[]).map((i,idx)=>`<div class="detail-item"><strong>${i.chapa||"Sem nome"}</strong><br>Qtd: ${i.quantidade||1} | Medida: ${String(i.largura).replace(".",",")} x ${String(i.altura).replace(".",",")} = ${Number(i.m2||0).toFixed(2).replace(".",",")} m²<br>Valor m²: ${moeda(i.valorM2)}<br>Total: <strong>${moeda(i.total||0)}</strong></div>`).join("");modalTotal.textContent="Subtotal: "+moeda(p.subtotal||0)+" | Frete: "+moeda(p.frete||0)+" | Total: "+moeda(p.total||0);modalBg.style.display="flex";}
 function fecharModal(){modalBg.style.display="none";pedidoAbertoId=null}
 async function salvarEntregaModal(){if(!pedidoAbertoId)return;const {error}=await db.from("pedidos").update({dia:valorEntrega(modalTrocarDia.value,modalTrocarPeriodo.value)}).eq("id",pedidoAbertoId);if(error){alert("Erro ao trocar entrega: "+error.message);return}await carregarPedidos(); abrirModal(pedidoAbertoId);}
@@ -441,7 +500,7 @@ function renderDashboard(){
  const lista=Object.entries(materiais).sort((a,b)=>b[1]-a[1]);materiaisVendidos.innerHTML=lista.length?lista.map(([nome,qtd])=>`<div class="material-row"><strong>${nome}</strong><span>${qtd} chapa${qtd==1?"":"s"}</span></div>`).join(""):`<p class="muted">Nenhum material vendido neste mês.</p>`;
  fatTotal.textContent=moeda(total);fatChapas.textContent=moeda(chapas);fatFretes.textContent=moeda(fretes);ticketMedio.textContent=moeda(arr.length?total/arr.length:0);qtdPedidos.textContent=arr.length;qtdEntregues.textContent=arr.filter(p=>p.entregue).length;qtdPendentes.textContent=arr.filter(p=>!p.entregue&&p.status!=="previo").length;m2Vendidos.textContent=m2.toFixed(2).replace(".",",");chapasVendidas.textContent=qtdChapas;
 }
-function renderTudo(){renderEntregas();renderHistorico();renderDashboard();renderCadastros()}
+function renderTudo(){renderEntregas();renderHistorico();renderDashboard();renderCadastros();renderInsumos()}
 function textoArquivo(v){return String(v||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"")||"sem-nome"}
 function nomeArquivoPedido(prefixo,p){return prefixo+"-"+(p.numero||p.id)+"-"+textoArquivo(p.cliente)+".pdf"}
 function escaparHTML(v){return String(v||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;")}
@@ -455,7 +514,9 @@ function iniciarApp(){
  appIniciado = true;
  mesDash.value=mesAtual();
  mesHistorico.value=mesAtual();
+ mesInsumos.value=mesAtual();
  limparFormulario();
+ limparFormularioInsumo();
  mostrarAba("pedidos");
  carregarPedidos();
  iniciarRealtime();
