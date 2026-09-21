@@ -405,10 +405,10 @@ function criarItem(id,dados={}){
  calcular();
 }
 function adicionarChapa(){criarItem(itemId++)}
-function removerChapa(id){if(document.querySelectorAll(".item").length<=1)return;document.querySelector(`.item[data-id="${id}"]`)?.remove();calcular()}
+function removerChapa(id){if(document.querySelectorAll("#itens .item").length<=1)return;document.querySelector(`#itens .item[data-id="${id}"]`)?.remove();calcular()}
 function calcular(){
  let subtotal=0;
- document.querySelectorAll(".item").forEach(item=>{
+ document.querySelectorAll("#itens .item").forEach(item=>{
   const qtd=numero(item.querySelector(".quantidade").value)||1,larg=numero(item.querySelector(".largura").value),alt=numero(item.querySelector(".altura").value),valor=numero(item.querySelector(".valorM2").value);
   const m2=qtd*larg*alt,total=m2*valor; subtotal+=total;
   item.querySelector(".m2").textContent=m2.toFixed(2).replace(".",",")+" m²";
@@ -418,18 +418,34 @@ function calcular(){
  document.getElementById("subtotalPedido").textContent=moeda(subtotal);
  document.getElementById("totalPedido").textContent=moeda(subtotal+frete);
 }
-function coletarItens(){return [...document.querySelectorAll(".item")].map(item=>{const quantidade=numero(item.querySelector(".quantidade").value)||1,largura=numero(item.querySelector(".largura").value),altura=numero(item.querySelector(".altura").value),valorM2=numero(item.querySelector(".valorM2").value);const m2=quantidade*largura*altura,total=m2*valorM2;return {chapa:item.querySelector(".chapa").value.trim(),quantidade,largura,altura,valorM2,m2,total};});}
+function coletarItens(){return [...document.querySelectorAll("#itens .item")].map(item=>{const quantidade=numero(item.querySelector(".quantidade").value)||1,largura=numero(item.querySelector(".largura").value),altura=numero(item.querySelector(".altura").value),valorM2=numero(item.querySelector(".valorM2").value);const m2=quantidade*largura*altura,total=m2*valorM2;return {chapa:item.querySelector(".chapa").value.trim(),quantidade,largura,altura,valorM2,m2,total};});}
 async function salvarPedido(){
- let cliente=document.getElementById("cliente").value.trim(); if(!cliente){alert("Escolha o cliente.");return}
- const clienteCadastrado=nomeDoCatalogo("cliente",cliente);if(!clienteCadastrado){alert("Cliente não cadastrado. Abra a aba Cadastros e cadastre o cliente antes de salvar o pedido.");return}cliente=clienteCadastrado;document.getElementById("cliente").value=cliente;
- const itens=coletarItens(),subtotal=itens.reduce((s,i)=>s+i.total,0),frete=numero(document.getElementById("fretePedido").value),total=subtotal+frete,editandoId=Number(document.getElementById("editandoId").value),entrega=valorEntrega(diaEntrega.value,periodoEntrega.value);
+ const campoCliente=document.getElementById("cliente"),campoObservacao=document.getElementById("observacao"),campoDia=document.getElementById("diaEntrega"),campoPeriodo=document.getElementById("periodoEntrega"),campoFrete=document.getElementById("fretePedido"),campoEdicao=document.getElementById("editandoId"),botao=document.getElementById("btnSalvar");
+ let cliente=campoCliente.value.replace(/\s+/g," ").trim(); if(!cliente){alert("Escolha o cliente.");return}
+ const clienteCadastrado=nomeDoCatalogo("cliente",cliente);if(!clienteCadastrado){alert("Cliente não cadastrado. Abra a aba Cadastros e cadastre o cliente antes de salvar o pedido.");return}cliente=clienteCadastrado;campoCliente.value=cliente;
+ const itens=coletarItens(),subtotal=itens.reduce((s,i)=>s+i.total,0),frete=numero(campoFrete.value),total=subtotal+frete,editandoId=Number(campoEdicao.value),entrega=valorEntrega(campoDia.value,campoPeriodo.value);
  if(itens.some(i=>!i.chapa)){alert("Digite o nome da chapa antes de salvar.");return}
  for(const item of itens){const pedra=nomeDoCatalogo("pedra",item.chapa);if(!pedra){alert(`Pedra não cadastrada: ${item.chapa}. Abra a aba Cadastros e cadastre a pedra antes de salvar o pedido.`);return}item.chapa=pedra}
- btnSalvar.disabled=true; btnSalvar.textContent="Salvando...";
- if(editandoId){const antigo=pedidos.find(p=>p.id===editandoId)||{};const pedido={...antigo,cliente,dia:entrega,observacao:observacao.value,itens,subtotal,frete,total,status:antigo.status==="romaneio_impresso"?"romaneio_impresso":"confirmado"};const {error}=await db.from("pedidos").update(pedidoParaDb(pedido)).eq("id",editandoId);if(error){alert("Erro ao salvar alteração: "+error.message)}}
- else {const pedido={cliente,dia:entrega,observacao:observacao.value,itens,subtotal,frete,total,entregue:false,data:dataISO(),dataEntrega:null,status:"confirmado"};const {data,error}=await db.from("pedidos").insert(pedidoParaDb(pedido)).select().single();if(error){alert("Erro ao salvar pedido: "+error.message)}else if(data && !data.numero){await db.from("pedidos").update({numero:String(data.id).padStart(4,"0")}).eq("id",data.id);}}
- btnSalvar.disabled=false; btnSalvar.textContent=editandoId?"Salvar alteração":"Salvar pedido";
- limparFormulario(); await carregarPedidos();
+ botao.disabled=true; botao.textContent="Salvando...";
+ try{
+  let erro=null;
+  if(editandoId){
+   const antigo=pedidos.find(p=>p.id===editandoId)||{};
+   const pedido={...antigo,cliente,dia:entrega,observacao:campoObservacao.value,itens,subtotal,frete,total,status:antigo.status==="romaneio_impresso"?"romaneio_impresso":"confirmado"};
+   const resultado=await db.from("pedidos").update(pedidoParaDb(pedido)).eq("id",editandoId);
+   erro=resultado.error;
+  }else{
+   const pedido={cliente,dia:entrega,observacao:campoObservacao.value,itens,subtotal,frete,total,entregue:false,data:dataISO(),dataEntrega:null,status:"confirmado"};
+   const resultado=await db.from("pedidos").insert(pedidoParaDb(pedido)).select("id,numero").single();
+   erro=resultado.error;
+   if(!erro&&resultado.data&&!resultado.data.numero){await db.from("pedidos").update({numero:String(resultado.data.id).padStart(4,"0")}).eq("id",resultado.data.id)}
+  }
+  if(erro){alert("Não foi possível salvar o pedido. Os dados continuam na tela para tentar novamente.\n\n"+erro.message);return}
+  limparFormulario();
+  await carregarPedidos();
+  alert(editandoId?"Alteração salva.":"Pedido de chapas salvo.");
+ }catch(erro){alert("Não foi possível salvar o pedido. Os dados continuam na tela para tentar novamente.\n\n"+(erro?.message||erro))}
+ finally{botao.disabled=false;botao.textContent=editandoId?"Salvar alteração":"Salvar pedido"}
 }
 function limparFormulario(){editandoId.value="";formTitulo.textContent="Novo pedido";btnSalvar.textContent="Salvar pedido";btnSalvar.disabled=false;btnCancelarEdicao.style.display="none";cliente.value="";observacao.value="";diaEntrega.value="A definir";periodoEntrega.value="A definir";fretePedido.value="";itens.innerHTML="";criarItem(itemId++)}
 function criarItemInsumo(dados={}){const id=insumoItemId++;const div=document.createElement("div");div.className="item insumo-item";div.dataset.id=id;div.innerHTML=`<div class="item-title"><span>Insumo</span><button class="btn-del" type="button" onclick="removerItemInsumo(${id})">Remover</button></div><div class="insumo-item-grid"><div class="insumo-nome"><label>Nome do insumo</label><input class="insumo-nome-input" list="listaInsumos" placeholder="Digite parte do nome" oninput="calcularInsumos()" onchange="aplicarProdutoInsumo(this)"></div><div><label>Quantidade</label><input class="insumo-qtd" inputmode="decimal" oninput="calcularInsumos()"></div><div><label>Unidade</label><select class="insumo-unidade"><option>Unidade</option><option>Pacote</option><option>Caixa</option><option>Kit</option><option>Litro</option><option>Quilo</option><option>Metro</option><option>Rolo</option><option>Par</option></select></div><div><label>Valor unitário</label><input class="insumo-valor" inputmode="decimal" oninput="calcularInsumos()"></div></div><div class="calc">Total do item: <strong class="insumo-item-total">R$ 0,00</strong></div>`;insumoItens.appendChild(div);div.querySelector(".insumo-nome-input").value=dados.nome||"";div.querySelector(".insumo-qtd").value=dados.quantidade||1;div.querySelector(".insumo-unidade").value=dados.unidade||"Unidade";div.querySelector(".insumo-valor").value=dados.valorUnitario?String(dados.valorUnitario).replace(".",","):"";calcularInsumos()}
