@@ -127,18 +127,29 @@ const ehInsumo=p=>String(p.status||'').startsWith('insumo_');
 function podeIntegrar(p){return p.status==='insumo_pendente'||(!ehInsumo(p)&&!String(p.status||'').startsWith('cadastro_')&&p.entregue===true&&p.status!=='previo'&&p.status!=='romaneio_impresso'&&p.status!=='cancelado')}
 function resumoOrigem(p){return JSON.stringify({cliente:p.cliente,total:Number(p.total),data:p.data,data_entrega:p.data_entrega,itens:p.itens,observacao:p.observacao,status:p.status,entregue:p.entregue})}
 function recibosIntegracao(){return db.integracaoPedidos||(db.integracaoPedidos={})}
+window.filtrarFilaPedidos=()=>{
+ const busca=normalize($('buscaClienteIntegracao')?.value||'');
+ let visiveis=0;
+ $('listaIntegracao')?.querySelectorAll('[data-pedido-cliente]').forEach(card=>{
+  card.hidden=!normalize(card.dataset.pedidoCliente).includes(busca);
+  if(!card.hidden)visiveis++;
+ });
+ const vazio=$('semResultadoIntegracao');
+ if(vazio)vazio.hidden=!filaPedidos.length||visiveis>0;
+};
 function desenharFilaPedidos(){
  const lista=$('listaIntegracao');if(!lista)return;
  lista.innerHTML=filaPedidos.length?filaPedidos.map((p,i)=>{
   const recibo=recibosIntegracao()[chavePedido(p)],tipo=ehInsumo(p)?'Insumos':'Chapas';
   const matches=db.receber.pessoas.filter(c=>normalize(c.nome)===normalize(p.cliente)||normalize(c.fantasia||'')===normalize(p.cliente));
   const selecionado=recibo?.pessoa_id||(matches.length===1?matches[0].id:'');
-  return `<div class="card"><h3>${tipo} #${esc(p.numero||p.id)} — ${esc(p.cliente)}</h3><p>${dateBR(ehInsumo(p)?p.data:(p.data_entrega||p.data))} • <strong>${money(p.total)}</strong></p><p class="muted">${(p.itens||[]).map(it=>esc(it.nome||it.chapa||'')+' × '+esc(it.quantidade||1)).join('<br>')}</p><label>Cliente no financeiro</label><select id="clienteIntegracao${i}" ${recibo?'disabled':''}><option value="">Selecione o cliente</option>${db.receber.pessoas.map(c=>`<option value="${attr(c.id)}" ${c.id===selecionado?'selected':''}>${esc(c.nome)}</option>`).join('')}</select><button class="primary" style="margin-top:12px" onclick="importarPedidoFinanceiro(${i})">${recibo?'Concluir marcação no pedido':'Lançar na conta corrente'}</button>${recibo?'<p class="muted">O débito já foi gravado. Esta ação apenas tenta concluir a marcação no aplicativo de pedidos.</p>':''}</div>`;
+  return `<div class="card" data-pedido-cliente="${attr(p.cliente)}"><h3>${tipo} #${esc(p.numero||p.id)} — ${esc(p.cliente)}</h3><p>${dateBR(ehInsumo(p)?p.data:(p.data_entrega||p.data))} • <strong>${money(p.total)}</strong></p><p class="muted">${(p.itens||[]).map(it=>esc(it.nome||it.chapa||'')+' × '+esc(it.quantidade||1)).join('<br>')}</p><label>Cliente no financeiro</label><select id="clienteIntegracao${i}" ${recibo?'disabled':''}><option value="">Selecione o cliente</option>${db.receber.pessoas.map(c=>`<option value="${attr(c.id)}" ${c.id===selecionado?'selected':''}>${esc(c.nome)}</option>`).join('')}</select><button class="primary" style="margin-top:12px" onclick="importarPedidoFinanceiro(${i})">${recibo?'Concluir marcação no pedido':'Lançar na conta corrente'}</button>${recibo?'<p class="muted">O débito já foi gravado. Esta ação apenas tenta concluir a marcação no aplicativo de pedidos.</p>':''}</div>`;
  }).join(''):'<p class="empty">Nenhum pedido para lançar. São listados insumos pendentes e chapas entregues ainda não lançadas.</p>';
+ window.filtrarFilaPedidos();
 }
 async function buscarFilaPedidos(){
  if(integracaoOcupada)return;
- openModal('Pedidos para lançar', '<p class="muted" id="integracaoMensagem">Buscando pedidos...</p><div id="listaIntegracao"></div>');
+ openModal('Pedidos para lançar', '<div class="field"><label for="buscaClienteIntegracao">Buscar cliente do pedido</label><input id="buscaClienteIntegracao" type="search" placeholder="Digite o nome ou parte do nome do cliente" oninput="filtrarFilaPedidos()"></div><p class="muted" id="integracaoMensagem">Buscando pedidos...</p><p id="semResultadoIntegracao" class="empty" hidden>Nenhum pedido encontrado para este cliente.</p><div id="listaIntegracao"></div>');
  try{
   if(!supa)throw Error('O financeiro precisa estar conectado ao banco para integrar.');
   clearTimeout(cloudSaveTimer);await saveCloudNow();
