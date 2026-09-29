@@ -124,7 +124,7 @@ const pedidosApi=window.supabase.createClient('https://jwzyujfrdmtvgwxmemqs.supa
 let filaPedidos=[],integracaoOcupada=false;
 const chavePedido=p=>'emporio-pedidos:'+p.id;
 const ehInsumo=p=>String(p.status||'').startsWith('insumo_');
-function podeIntegrar(p){return p.status==='insumo_pendente'||(!ehInsumo(p)&&!String(p.status||'').startsWith('cadastro_')&&p.entregue===true&&p.status!=='previo'&&p.status!=='romaneio_impresso'&&p.status!=='cancelado')}
+function podeIntegrar(p){return p.status==='insumo_pendente'||(!ehInsumo(p)&&!String(p.status||'').startsWith('cadastro_')&&p.entregue===true&&p.status!=='previo'&&p.status!=='romaneio_impresso'&&p.status!=='chapa_pago'&&p.status!=='cancelado')}
 function resumoOrigem(p){return JSON.stringify({cliente:p.cliente,total:Number(p.total),data:p.data,data_entrega:p.data_entrega,itens:p.itens,observacao:p.observacao,status:p.status,entregue:p.entregue})}
 function recibosIntegracao(){return db.integracaoPedidos||(db.integracaoPedidos={})}
 window.filtrarFilaPedidos=()=>{
