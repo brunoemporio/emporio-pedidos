@@ -31,29 +31,58 @@ let db; try{db=JSON.parse(localStorage.getItem('emporio_financeiro_integrado_v1'
 try{let old=JSON.parse(localStorage.getItem('emporio_financeiro_v2_single')||'{}'); if(old.clientes&&old.clientes.length&&!db.receber.pessoas.length){db.receber.pessoas=old.clientes; db.receber.lancamentos=old.lancamentos||[]; db.receber.boletos=old.boletos||[]}}catch(e){}
 let mod='receber'; const M=()=>db[mod]; const cfg=()=> mod==='receber'?{nome:'Contas a Receber',cor:'🟢',pessoa:'Cliente',pessoas:'Clientes',acao:'Receber',acaoMes:'Recebido no mês',total:'Total a receber',ranking:'Maiores devedores',mov:'Venda',movManual:'Nova venda',movDesc:'Venda',pay:'Recebimento',payBtn:'+ Baixar pagamento',boleto:'Boletos a receber',cc:'Conta corrente',pdf:'Valores em aberto do cliente'}:{nome:'Contas a Pagar',cor:'🔴',pessoa:'Fornecedor',pessoas:'Fornecedores',acao:'Pagar',acaoMes:'Pago no mês',total:'Total a pagar',ranking:'Maiores a pagar',mov:'Compra',movManual:'Nova compra',movDesc:'Compra / Nota',pay:'Pagamento',payBtn:'+ Pagar',boleto:'Boletos a pagar',cc:'Conta corrente',pdf:'Valores em aberto do fornecedor'};
 function normalizeDb(){ensureDbShape();['receber','pagar'].forEach(m=>{db[m].boletos.forEach(b=>{b.valor=toNum(b.valor);b.nota=b.nota||'';if(b.status==='Pago'&&!b.pago_em)b.pago_em=today()});db[m].lancamentos.forEach(l=>{l.valor=toNum(l.valor);l.data=cleanDate(l.data)})});db.cheques.forEach(ch=>{ch.valor=toNum(ch.valor);ch.envio=cleanDate(ch.envio);ch.vencimento=cleanDate(ch.vencimento);ch.status=ch.status||'Enviado'})}
+let cloudBase;
+const copiarEstado=v=>v===undefined?undefined:JSON.parse(JSON.stringify(v));
+const estadosIguais=(a,b)=>JSON.stringify(a)===JSON.stringify(b);
+function combinarEstados(base,local,remoto,caminho='dados',registro=false){
+ if(estadosIguais(local,base))return copiarEstado(remoto);
+ if(estadosIguais(remoto,base)||estadosIguais(local,remoto))return copiarEstado(local);
+ const objeto=v=>v!==null&&typeof v==='object'&&!Array.isArray(v);
+ const porId=v=>Array.isArray(v)&&v.every(x=>objeto(x)&&x.id!=null)&&new Set(v.map(x=>String(x.id))).size===v.length;
+ if(!registro&&porId(local)&&porId(remoto)&&(base===undefined||porId(base))){
+  const b=new Map((base||[]).map(x=>[String(x.id),x])),l=new Map(local.map(x=>[String(x.id),x])),r=new Map(remoto.map(x=>[String(x.id),x]));
+  return [...new Set([...r.keys(),...l.keys(),...b.keys()])].map(id=>combinarEstados(b.get(id),l.get(id),r.get(id),caminho+' / '+id,true)).filter(x=>x!==undefined);
+ }
+ if(!registro&&objeto(local)&&objeto(remoto)&&(base===undefined||objeto(base))){
+  const out={};for(const key of new Set([...Object.keys(base||{}),...Object.keys(local),...Object.keys(remoto)])){
+   const valor=combinarEstados(base?.[key],local[key],remoto[key],caminho+' / '+key,caminho.endsWith('integracaoPedidos'));
+   if(valor!==undefined)out[key]=valor;
+  }return out;
+ }
+ throw Error('Dois computadores alteraram o mesmo registro ('+caminho+'). Nenhuma alteração desta gravação foi enviada. Confira esse registro antes de tentar novamente.');
+}
 async function loadCloud(){
  if(!supa)return false;
  try{
   let {data,error}=await supa.from('app_state').select('data,updated_at').eq('id',CLOUD_ROW_ID).maybeSingle();if(error)throw error;
-  if(data&&data.data){db=data.data;cloudVersion=data.updated_at;normalizeDb();localStorage.setItem('emporio_financeiro_integrado_v1',JSON.stringify(db))}
-  else{normalizeDb();const created=await supa.from('app_state').insert({id:CLOUD_ROW_ID,data:db,updated_at:new Date().toISOString()}).select('updated_at').single();if(created.error)throw created.error;cloudVersion=created.data.updated_at}
+  if(data&&data.data){db=data.data;cloudVersion=data.updated_at;normalizeDb();cloudBase=copiarEstado(db);localStorage.setItem('emporio_financeiro_integrado_v1',JSON.stringify(db))}
+  else{normalizeDb();const created=await supa.from('app_state').insert({id:CLOUD_ROW_ID,data:db,updated_at:new Date().toISOString()}).select('updated_at').single();if(created.error)throw created.error;cloudVersion=created.data.updated_at;cloudBase=copiarEstado(db)}
   cloudLoaded=true;return true;
  }catch(e){console.warn('Não foi possível carregar a versão do banco.',e);cloudLoaded=true;return false}
 }
 function saveCloudNow(){
  const task=cloudWriteQueue.catch(()=>{}).then(async()=>{
-  if(!supa)throw Error('Conexão com o financeiro indisponível.');
-  if(cloudVersion===undefined)throw Error('O banco não foi carregado. Reabra o aplicativo conectado à internet.');
-  normalizeDb();const snapshot=JSON.parse(JSON.stringify(db));
-  const stamp=new Date(Math.max(Date.now(),(Date.parse(cloudVersion)||0)+1)).toISOString();
-  let query=supa.from('app_state').update({data:snapshot,updated_at:stamp}).eq('id',CLOUD_ROW_ID);
-  query=cloudVersion===null?query.is('updated_at',null):query.eq('updated_at',cloudVersion);
-  const {data,error}=await query.select('updated_at').maybeSingle();if(error)throw error;
-  if(!data)throw Error('O financeiro foi atualizado em outra janela ou computador. Seus dados locais foram preservados. Reabra o aplicativo e confira os últimos lançamentos antes de tentar novamente.');
-  cloudVersion=data.updated_at;
- });
- cloudWriteQueue=task;return task;
+  if(!supa||cloudBase===undefined)throw Error('O banco não foi carregado. Reabra o aplicativo conectado à internet.');
+  normalizeDb();const snapshot=copiarEstado(db),base=copiarEstado(cloudBase);
+  for(let tentativa=0;tentativa<4;tentativa++){
+   const leitura=await supa.from('app_state').select('data,updated_at').eq('id',CLOUD_ROW_ID).single();if(leitura.error)throw leitura.error;
+   if(!leitura.data?.data)throw Error('Dados do financeiro indisponíveis.');
+   const remoto=leitura.data.data,versao=leitura.data.updated_at;
+   const combinado=combinarEstados(base,snapshot,remoto);
+   const stamp=new Date(Math.max(Date.now(),(Date.parse(versao)||0)+1)).toISOString();
+   let query=supa.from('app_state').update({data:combinado,updated_at:stamp}).eq('id',CLOUD_ROW_ID);
+   query=versao===null?query.is('updated_at',null):query.eq('updated_at',versao);
+   const {data,error}=await query.select('updated_at').maybeSingle();if(error)throw error;
+   if(!data)continue;
+   // Preserva também alterações feitas nesta janela enquanto a rede respondia.
+   const atual=combinarEstados(snapshot,db,combinado);
+   cloudBase=copiarEstado(combinado);cloudVersion=data.updated_at;db=atual;
+   localStorage.setItem('emporio_financeiro_integrado_v1',JSON.stringify(db));renderAll();return;
+  }
+  throw Error('O financeiro está recebendo várias alterações. Seus dados locais foram mantidos; tente salvar novamente.');
+ });cloudWriteQueue=task;return task;
 }
+
 function queueCloudSave(){if(!supa)return;clearTimeout(cloudSaveTimer);cloudSaveTimer=setTimeout(()=>saveCloudNow().catch(e=>alert('Salvo neste navegador, mas não sincronizado. '+e.message)),350)}
 function save(){try{normalizeDb();localStorage.setItem('emporio_financeiro_integrado_v1',JSON.stringify(db))}catch(e){alert('Não foi possível salvar os dados no navegador. Verifique o espaço disponível.');return} queueCloudSave(); renderAll()}
 function openModal(t,h){$('modalTitle').textContent=t;$('modalBody').innerHTML=h;$('modal').classList.remove('hidden')} function closeModal(){$('modal').classList.add('hidden')} $('close').onclick=closeModal;
@@ -194,7 +223,7 @@ window.importarPedidoFinanceiro=async i=>{
    catch(e){
     // Uma resposta perdida pode esconder uma gravação concluída: consulte o recibo.
     const check=await supa.from('app_state').select('data,updated_at').eq('id',CLOUD_ROW_ID).single();
-    if(!check.error&&check.data?.data?.integracaoPedidos?.[key]){db=check.data.data;cloudVersion=check.data.updated_at;gravou=true;localStorage.setItem('emporio_financeiro_integrado_v1',JSON.stringify(db))}
+    if(!check.error&&check.data?.data?.integracaoPedidos?.[key]){db=check.data.data;cloudBase=copiarEstado(db);cloudVersion=check.data.updated_at;gravou=true;localStorage.setItem('emporio_financeiro_integrado_v1',JSON.stringify(db))}
     else{db.receber.lancamentos=db.receber.lancamentos.filter(l=>l.id!==lancamento.id);delete recibosIntegracao()[key];throw e}
    }
   }
