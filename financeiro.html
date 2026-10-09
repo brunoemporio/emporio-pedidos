@@ -33,7 +33,14 @@ let mod='receber'; const M=()=>db[mod]; const cfg=()=> mod==='receber'?{nome:'Co
 function normalizeDb(){ensureDbShape();['receber','pagar'].forEach(m=>{db[m].boletos.forEach(b=>{b.valor=toNum(b.valor);b.nota=b.nota||'';if(b.status==='Pago'&&!b.pago_em)b.pago_em=today()});db[m].lancamentos.forEach(l=>{l.valor=toNum(l.valor);l.data=cleanDate(l.data)})});db.cheques.forEach(ch=>{ch.valor=toNum(ch.valor);ch.envio=cleanDate(ch.envio);ch.vencimento=cleanDate(ch.vencimento);ch.status=ch.status||'Enviado'})}
 let cloudBase;
 const copiarEstado=v=>v===undefined?undefined:JSON.parse(JSON.stringify(v));
-const estadosIguais=(a,b)=>JSON.stringify(a)===JSON.stringify(b);
+// JSONB pode devolver as chaves em outra ordem; isso não é uma edição.
+function estadosIguais(a,b){
+ if(a===b)return true;
+ if(a===null||b===null||typeof a!=='object'||typeof b!=='object')return false;
+ if(Array.isArray(a)||Array.isArray(b))return Array.isArray(a)&&Array.isArray(b)&&a.length===b.length&&a.every((v,i)=>estadosIguais(v,b[i]));
+ const chaves=Object.keys(a);
+ return chaves.length===Object.keys(b).length&&chaves.every(k=>Object.prototype.hasOwnProperty.call(b,k)&&estadosIguais(a[k],b[k]));
+}
 function combinarEstados(base,local,remoto,caminho='dados',registro=false){
  if(estadosIguais(local,base))return copiarEstado(remoto);
  if(estadosIguais(remoto,base)||estadosIguais(local,remoto))return copiarEstado(local);
@@ -55,7 +62,16 @@ async function loadCloud(){
  if(!supa)return false;
  try{
   let {data,error}=await supa.from('app_state').select('data,updated_at').eq('id',CLOUD_ROW_ID).maybeSingle();if(error)throw error;
-  if(data&&data.data){db=data.data;cloudVersion=data.updated_at;normalizeDb();cloudBase=copiarEstado(db);localStorage.setItem('emporio_financeiro_integrado_v1',JSON.stringify(db))}
+  if(data&&data.data){
+   const localAnterior=localStorage.getItem('emporio_financeiro_integrado_v1');
+   if(localAnterior&&localAnterior!==JSON.stringify(data.data)){
+    // Guarda a cópia anterior antes de carregar o banco, inclusive pendências antigas.
+    const chaveBackup='emporio_financeiro_backup_'+Date.now();
+    localStorage.setItem(chaveBackup,localAnterior);
+    localStorage.setItem('emporio_financeiro_ultimo_backup',chaveBackup);
+   }
+   db=data.data;cloudVersion=data.updated_at;normalizeDb();cloudBase=copiarEstado(db);localStorage.setItem('emporio_financeiro_integrado_v1',JSON.stringify(db));
+  }
   else{normalizeDb();const created=await supa.from('app_state').insert({id:CLOUD_ROW_ID,data:db,updated_at:new Date().toISOString()}).select('updated_at').single();if(created.error)throw created.error;cloudVersion=created.data.updated_at;cloudBase=copiarEstado(db)}
   cloudLoaded=true;return true;
  }catch(e){console.warn('Não foi possível carregar a versão do banco.',e);cloudLoaded=true;return false}
