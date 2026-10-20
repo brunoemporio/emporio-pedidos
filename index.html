@@ -80,6 +80,29 @@ window.CATALOGO_INSUMOS=[{"nome":"acelerador de massa 90gr","codigo":"1","unidad
     @media(max-width:850px){body{padding-bottom:76px}.grid2,.row,.cadastro-grid{grid-template-columns:1fr}.item-grid,.insumo-item-grid{grid-template-columns:1fr 1fr}.item-grid .mobile-full,.insumo-item-grid .insumo-nome{grid-column:1/-1}.stats{grid-template-columns:1fr 1fr}.actions4{grid-template-columns:1fr}.brand{font-size:13px}.total{display:block}.btn-save{width:100%;margin-top:10px}.historico-top{display:block}.historico-top .field{max-width:100%;margin-bottom:10px}.historico-top button{width:100%;margin-bottom:10px}.historico-card{grid-template-columns:1fr}.historico-card .btn-romaneio{width:100%}.desktop-tabs{display:none}.tabs-bottom{display:grid}.tabs-bottom .tab-btn{font-size:9px;padding:8px 1px}.insumo-toolbar{display:block}.insumo-toolbar .field{margin-bottom:8px}.insumo-pedido-head{display:block}}
   .insumos-colunas{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;align-items:start}.insumos-coluna{min-width:0;border:1px solid #ddd6cc;border-radius:18px;background:#faf8f4;overflow:hidden}.insumos-coluna-topo{padding:16px;background:#f0ece5}.insumos-coluna-topo h3{font-size:16px;margin:0 0 8px}.insumos-coluna-topo span{font-size:13px;color:#555}.insumos-coluna.pendente .insumos-coluna-topo{background:#fff1c2}.insumos-coluna.pago .insumos-coluna-topo{background:#d1fadf}.insumos-coluna.financeiro .insumos-coluna-topo{background:#dbeafe}.insumos-coluna.cancelado{grid-column:1/-1}.insumos-coluna.cancelado .insumos-coluna-topo{background:#fee4e2}.insumos-coluna-lista{padding:10px}.insumos-coluna .insumo-pedido{background:#fff;overflow-wrap:anywhere;padding:12px}.insumos-coluna .insumo-pedido-head{display:block}.insumos-coluna .status-insumo{margin-top:8px}.insumos-coluna .insumo-acoes button{flex:1 1 100%;white-space:normal}.insumos-coluna .detail-item{padding:10px}@media(max-width:850px){.insumos-colunas{grid-template-columns:minmax(0,1fr)}}
 </style>
+<!-- tema-insumos-inicio --><style>
+/* Identidade visual exclusiva do módulo de insumos. */
+.tab-btn[data-tab="insumos"]{background:#dbeafe;color:#174a80}
+.desktop-tabs .tab-btn[data-tab="insumos"]{background:#dbeafe;color:#174a80}
+.tab-btn[data-tab="insumos"].active,.desktop-tabs .tab-btn[data-tab="insumos"].active{background:#175b96;color:#fff}
+#aba-insumos{background:#eff6fc;border:1px solid #bdd5eb;border-top:6px solid #175b96}
+#aba-insumos #tituloFormularioInsumo{color:#174a80}
+#aba-insumos label{color:#254d70}
+#aba-insumos input,#aba-insumos select{background:#fff;border-color:#b4cde3}
+#aba-insumos input:focus,#aba-insumos select:focus{border-color:#175b96;box-shadow:0 0 0 3px #dbeafe}
+#aba-insumos .insumo-item{background:#fff;border-color:#bdd5eb}
+#aba-insumos .calc{background:#edf5fc}
+#aba-insumos .btn-add,#aba-insumos .btn-light{background:#dbeafe;color:#174a80}
+#aba-insumos .btn-dark{background:#175b96;color:#fff}
+#aba-insumos .total{background:#174a80}
+#aba-insumos .total small{color:#dbeafe}
+#aba-insumos .btn-save{background:#fff;color:#174a80}
+#aba-insumos .stat{background:#fff;border-color:#bdd5eb}
+#aba-insumos .stat strong{color:#174a80}
+#aba-insumos .insumo-toolbar{padding:14px;border:1px solid #bdd5eb;border-radius:18px;background:#e3eff9}
+#aba-insumos .insumos-coluna{border-color:#bdd5eb}
+#aba-insumos button:focus-visible{outline:3px solid #175b96;outline-offset:3px}
+</style><!-- tema-insumos-fim -->
 </head>
 <body>
 <div id="loginScreen" class="login-screen">
