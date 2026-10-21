@@ -103,7 +103,16 @@ window.CATALOGO_INSUMOS=[{"nome":"acelerador de massa 90gr","codigo":"1","unidad
 #aba-insumos .insumos-coluna{border-color:#bdd5eb}
 #aba-insumos button:focus-visible{outline:3px solid #175b96;outline-offset:3px}
 </style><!-- tema-insumos-fim -->
-</head>
+<style>
+.btn-envio-financeiro{background:#176344;color:white;border:0;border-radius:10px;padding:11px 14px;cursor:pointer;font-weight:700}
+.historico-card{grid-template-columns:minmax(0,1fr) auto auto}
+#envioDiretoModal{display:none;position:fixed;inset:0;z-index:10000;background:#0008;align-items:center;justify-content:center;padding:18px}
+#envioDiretoModal .envio-caixa{background:white;color:#222;border-radius:18px;padding:24px;max-width:560px;width:100%;max-height:90vh;overflow:auto}
+#envioDiretoModal select{width:100%;padding:12px;margin:8px 0 16px}
+#envioDiretoMensagem{line-height:1.5;margin:14px 0}
+.envio-acoes{display:flex;gap:10px;flex-wrap:wrap}
+@media(max-width:750px){.historico-card{grid-template-columns:1fr}}
+</style></head>
 <body>
 <div id="loginScreen" class="login-screen">
   <div class="login-box">
@@ -547,7 +556,7 @@ function renderInsumos(){
  const prioridade={pendente:0,financeiro:1,pago:2,cancelado:3};
  const arr=pedidosDoMes.filter(p=>filtro==="todos"||p.status===filtro).filter(p=>!busca||textoBusca(p.cliente).includes(busca)||(p.itens||[]).some(i=>textoBusca(i.nome).includes(busca))).sort((a,b)=>(prioridade[a.status]??1)-(prioridade[b.status]??1)||String(b.data).localeCompare(String(a.data))||b.id-a.id);
  const destino=document.getElementById("listaPedidosInsumos");if(!destino)return;
- const cartaoInsumo=p=>`<div class="insumo-pedido"><div class="insumo-pedido-head"><div><h3>#${escaparHTML(p.numero||p.id)} - ${escaparHTML(p.cliente)}</h3><span class="muted">Venda: ${dataBR(p.data)}${p.dataPagamento?` • Pagamento: ${dataBR(p.dataPagamento)}`:""}</span></div><span class="status-insumo ${p.status}">${p.status==="pago"?"Pago":p.status==="financeiro"?"Lançado no financeiro":p.status==="cancelado"?"Cancelado":"Pendente de pagamento"}</span></div><div class="detail-item">${(p.itens||[]).map(i=>`${escaparHTML(i.nome)} — ${i.quantidade} ${escaparHTML(i.unidade)} × ${moeda(i.valorUnitario)} = <strong>${moeda(i.total)}</strong>`).join("<br>")}</div>${p.observacao?`<p class="muted">Obs: ${escaparHTML(p.observacao)}</p>`:""}<strong>Total: ${moeda(p.total)}</strong><div class="insumo-acoes"><button class="btn-light" onclick="editarPedidoInsumo(${p.id})">Editar</button>${p.status!=="pago"?`<button class="btn-dark" onclick="alterarStatusInsumo(${p.id},'pago')">Marcar como pago</button>`:`<button class="btn-light" onclick="alterarStatusInsumo(${p.id},'pendente')">Voltar para pendente</button>`}${p.status==="financeiro"?`<button class="btn-light" onclick="alterarStatusInsumo(${p.id},'pendente')">Voltar para pendente</button>`:""}<button class="btn-light" onclick="baixarPDFInsumo(${p.id})">Baixar PDF</button>${p.status!=="cancelado"?`<button class="btn-light" onclick="alterarStatusInsumo(${p.id},'cancelado')">Cancelar</button>`:""}<button class="btn-red" onclick="excluirInsumo(${p.id})">Excluir</button></div></div>`;
+ const cartaoInsumo=p=>`<div class="insumo-pedido"><div class="insumo-pedido-head"><div><h3>#${escaparHTML(p.numero||p.id)} - ${escaparHTML(p.cliente)}</h3><span class="muted">Venda: ${dataBR(p.data)}${p.dataPagamento?` • Pagamento: ${dataBR(p.dataPagamento)}`:""}</span></div><span class="status-insumo ${p.status}">${p.status==="pago"?"Pago":p.status==="financeiro"?"Lançado no financeiro":p.status==="cancelado"?"Cancelado":"Pendente de pagamento"}</span></div><div class="detail-item">${(p.itens||[]).map(i=>`${escaparHTML(i.nome)} — ${i.quantidade} ${escaparHTML(i.unidade)} × ${moeda(i.valorUnitario)} = <strong>${moeda(i.total)}</strong>`).join("<br>")}</div>${p.observacao?`<p class="muted">Obs: ${escaparHTML(p.observacao)}</p>`:""}<strong>Total: ${moeda(p.total)}</strong><div class="insumo-acoes">${p.status==="pendente"?`<button class="btn-envio-financeiro" onclick="abrirEnvioDireto(${p.id})">Lançar no financeiro</button>`:""}<button class="btn-light" onclick="editarPedidoInsumo(${p.id})">Editar</button>${p.status!=="pago"?`<button class="btn-dark" onclick="alterarStatusInsumo(${p.id},'pago')">Marcar como pago</button>`:`<button class="btn-light" onclick="alterarStatusInsumo(${p.id},'pendente')">Voltar para pendente</button>`}${p.status==="financeiro"?`<button class="btn-light" onclick="alterarStatusInsumo(${p.id},'pendente')">Voltar para pendente</button>`:""}<button class="btn-light" onclick="baixarPDFInsumo(${p.id})">Baixar PDF</button>${p.status!=="cancelado"?`<button class="btn-light" onclick="alterarStatusInsumo(${p.id},'cancelado')">Cancelar</button>`:""}<button class="btn-red" onclick="excluirInsumo(${p.id})">Excluir</button></div></div>`;
  const grupos=[{status:"pendente",titulo:"Pendentes"},{status:"pago",titulo:"Pagos"},{status:"financeiro",titulo:"Lançados no financeiro"},{status:"cancelado",titulo:"Cancelados"}];
  destino.innerHTML=arr.length?'<div class="insumos-colunas">'+grupos.filter(g=>g.status!=="cancelado"||arr.some(p=>p.status===g.status)).map(g=>{
   const itens=arr.filter(p=>p.status===g.status),total=itens.reduce((s,p)=>s+(Number(p.total)||0),0);
@@ -612,7 +621,7 @@ function renderHistorico(){
  btnToggleHistorico.textContent=historicoAberto?"Ocultar entregues":"Mostrar entregues";
  historico.className=historicoAberto?"":"hide";
  if(!historicoAberto){historico.innerHTML="";return}
- historico.innerHTML=arr.length?arr.map(p=>{const imp=romaneioImpresso(p),pend=romaneioPendente(p),ant=romaneioAnterior(p);const status=p.status==="chapa_pago"?"Pago":imp?"Lançado":pend?"A lançar":"Romaneio anterior";return `<div class="historico-card ${imp?"impresso":pend?"pendente":""}"><button class="delivery done" onclick="abrirModal(${p.id})">#${p.numero||p.id} - ${p.cliente} - ${moeda(p.total)} <span class="romaneio-status ${imp?"impresso":pend?"pendente":""}">${status}</span></button>${!imp?`<button class="btn-romaneio" onclick="marcarPagoChapas(${p.id},this)">${p.status==="chapa_pago"?"Voltar para não pago":"Marcar como pago"}</button>`:""}</div>`}).join(""):`<p class="muted">Nenhum pedido entregue encontrado.</p>`;
+ historico.innerHTML=arr.length?arr.map(p=>{const imp=romaneioImpresso(p),pend=romaneioPendente(p),ant=romaneioAnterior(p);const status=p.status==="chapa_pago"?"Pago":imp?"Lançado":pend?"A lançar":"Romaneio anterior";return `<div class="historico-card ${imp?"impresso":pend?"pendente":""}"><button class="delivery done" onclick="abrirModal(${p.id})">#${p.numero||p.id} - ${p.cliente} - ${moeda(p.total)} <span class="romaneio-status ${imp?"impresso":pend?"pendente":""}">${status}</span></button>${pend?`<button class="btn-envio-financeiro" onclick="abrirEnvioDireto(${p.id})">Lançar no financeiro</button>`:""}${!imp?`<button class="btn-romaneio" onclick="marcarPagoChapas(${p.id},this)">${p.status==="chapa_pago"?"Voltar para não pago":"Marcar como pago"}</button>`:""}</div>`}).join(""):`<p class="muted">Nenhum pedido entregue encontrado.</p>`;
 }
 function renderDashboard(){
  const mes=mesDash.value||mesAtual();mesDash.value=mes;const arr=pedidos.filter(p=>(p.data||"").slice(0,7)===mes&&p.status!=="previo");const total=arr.reduce((s,p)=>s+(p.total||0),0),chapas=arr.reduce((s,p)=>s+(p.subtotal||0),0),fretes=arr.reduce((s,p)=>s+(p.frete||0),0),m2=arr.flatMap(p=>p.itens||[]).reduce((s,i)=>s+(i.m2||0),0);
@@ -644,4 +653,114 @@ function iniciarApp(){
 }
 verificarLogin();
 </script>
-</body></html>
+<div id="envioDiretoModal" role="dialog" aria-modal="true" aria-labelledby="envioDiretoTitulo">
+<div class="envio-caixa"><h2 id="envioDiretoTitulo">Lançar na conta do cliente</h2>
+<p id="envioDiretoResumo"></p>
+<label for="envioDiretoCliente">Cliente no financeiro</label><select id="envioDiretoCliente"></select>
+<p>Ao confirmar, o valor será lançado diretamente na conta corrente. Confira se esta venda já foi lançada manualmente.</p>
+<p id="envioDiretoMensagem" role="status"></p>
+<div class="envio-acoes"><button id="envioDiretoConfirmar" class="btn-envio-financeiro" onclick="confirmarEnvioDireto()">Confirmar lançamento</button><button id="envioDiretoFechar" class="btn-light" onclick="fecharEnvioDireto()">Fechar</button></div>
+</div></div><script>(()=>{
+ const financeiro=window.supabase.createClient("https://jnztuckxuhniszthzhsn.supabase.co","sb_publishable_imePEXyOjPsMun9c6vwnNg_iviHll-3");
+ let origem=null,ocupado=false,salvo=false;
+ const el=id=>document.getElementById(id);
+ const insumo=p=>String(p.status||'').startsWith('insumo_');
+ const permitido=p=>p.status==='insumo_pendente'||(p.entregue===true&&!insumo(p)&&!String(p.status||'').startsWith('cadastro_')&&!['chapa_pago','previo','cancelado','romaneio_impresso'].includes(p.status));
+ const resumo=p=>({cliente:p.cliente,total:Number(p.total),data:p.data,data_entrega:p.data_entrega,itens:p.itens,observacao:p.observacao,status:p.status,entregue:p.entregue});
+ const igual=(a,b)=>{
+  if(a===b)return true;
+  if(!a||!b||typeof a!=='object'||typeof b!=='object')return false;
+  const ka=Object.keys(a).filter(k=>a[k]!==undefined),kb=Object.keys(b).filter(k=>b[k]!==undefined);
+  return ka.length===kb.length&&ka.every(k=>Object.prototype.hasOwnProperty.call(b,k)&&igual(a[k],b[k]));
+ };
+ const nome=v=>String(v||'').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,' ');
+ async function lerFinanceiro(){
+  const r=await financeiro.from('app_state').select('data,updated_at').eq('id','principal').single();
+  if(r.error)throw r.error;
+  if(!Array.isArray(r.data?.data?.receber?.pessoas)||!Array.isArray(r.data?.data?.receber?.lancamentos))throw Error('O banco financeiro não contém os cadastros esperados.');
+  return r.data;
+ }
+ async function lerPedido(id){
+  const r=await db.from('pedidos').select('*').eq('id',id).single();if(r.error)throw r.error;return r.data;
+ }
+ function reciboValido(estado,p,pessoaId){
+  const recibo=estado.integracaoPedidos?.['emporio-pedidos:'+p.id];if(!recibo)return false;
+  let anterior;try{anterior=JSON.parse(recibo.origem)}catch{throw Error('Referência financeira antiga inválida. Confira o extrato.')}
+  if(!igual(anterior,resumo(p))||recibo.pessoa_id!==pessoaId)throw Error('Este pedido já tem lançamento com dados diferentes. Confira a conta do cliente; nenhum novo débito foi criado.');
+  if(!estado.receber.lancamentos.some(l=>l.id===recibo.lancamento_id&&l.pessoa_id===pessoaId&&Number(l.valor)===Number(p.total)&&l.tipo==='mov'))throw Error('O lançamento anterior foi desfeito ou alterado no financeiro. Confira o extrato antes de lançar novamente.');
+  return true;
+ }
+ function bloquear(valor){
+  ocupado=valor;
+  ['envioDiretoConfirmar','envioDiretoCliente','envioDiretoFechar'].forEach(id=>el(id).disabled=valor);
+ }
+ window.fecharEnvioDireto=()=>{if(!ocupado)el('envioDiretoModal').style.display='none'};
+ window.abrirEnvioDireto=async id=>{
+  if(ocupado)return;origem=null;salvo=false;
+  el('envioDiretoModal').style.display='flex';el('envioDiretoResumo').textContent='Carregando pedido e clientes...';
+  el('envioDiretoMensagem').textContent='';el('envioDiretoCliente').innerHTML='';el('envioDiretoConfirmar').textContent='Confirmar lançamento';bloquear(true);
+  try{
+   const p=await lerPedido(id);
+   if(!permitido(p))throw Error('Este pedido não está disponível para lançar. Chapas precisam estar entregues; pedidos pagos ou já lançados ficam fora.');
+   if(!Number.isFinite(Number(p.total))||Number(p.total)<=0)throw Error('O pedido precisa ter um total maior que zero.');
+   const row=await lerFinanceiro(),recibo=row.data.integracaoPedidos?.['emporio-pedidos:'+p.id];
+   const clientes=row.data.receber.pessoas,matches=clientes.filter(c=>nome(c.nome)===nome(p.cliente)||nome(c.fantasia)===nome(p.cliente));
+   const escolhido=recibo?.pessoa_id||(matches.length===1?matches[0].id:'');
+   el('envioDiretoCliente').innerHTML='<option value="">Selecione o cliente no financeiro</option>'+clientes.map(c=>`<option value="${escaparHTML(c.id)}">${escaparHTML(c.nome)}</option>`).join('');
+   el('envioDiretoCliente').value=escolhido;
+   el('envioDiretoResumo').textContent=(insumo(p)?'Insumos':'Chapas')+' #'+(p.numero||p.id)+' — '+p.cliente+' — '+moeda(p.total);
+   el('envioDiretoMensagem').textContent=recibo?'Este pedido já foi gravado no financeiro. Confirme para tentar concluir a marcação, sem criar outro débito.':'Confira o cliente e confirme que esta venda ainda não foi lançada manualmente. O valor será lançado na conta corrente, sem registrar pagamento.';
+   origem=p;
+  }catch(e){el('envioDiretoMensagem').textContent=e.message}
+  finally{bloquear(false);el('envioDiretoConfirmar').disabled=!origem}
+ };
+ window.confirmarEnvioDireto=async()=>{
+  if(ocupado||!origem)return;
+  const pessoaId=el('envioDiretoCliente').value;
+  if(!pessoaId){el('envioDiretoMensagem').textContent='Selecione o cliente no financeiro.';return}
+  bloquear(true);
+  try{
+   const p=await lerPedido(origem.id),key='emporio-pedidos:'+p.id;
+   const alvo=insumo(origem)?'insumo_financeiro':'romaneio_impresso';
+   // Permite concluir uma resposta perdida depois de a marcação já ter sido feita.
+   if(p.status===alvo){
+    const row=await lerFinanceiro();
+    if(!reciboValido(row.data,origem,pessoaId))throw Error('O pedido foi marcado em outra tela. Confira o financeiro.');
+    salvo=true;
+   }else{
+    if(!permitido(p)||!igual(resumo(p),resumo(origem)))throw Error('O pedido foi alterado. Feche esta janela e abra novamente para conferir.');
+    let gravado=false;
+    for(let tentativa=0;tentativa<4;tentativa++){
+     const row=await lerFinanceiro(),estado=row.data;
+     if(!estado.receber.pessoas.some(c=>c.id===pessoaId))throw Error('Cliente não encontrado no financeiro.');
+     if(reciboValido(estado,p,pessoaId)){gravado=true;break}
+     const registros=estado.receber.lancamentos,numero=String(p.numero||p.id);
+     if(registros.some(l=>l.id==='pedido-'+p.id||l.origem_pedido===key))throw Error('Este pedido já tem um lançamento. Confira o extrato.');
+     if(!insumo(p)&&registros.some(l=>l.tipo==='mov'&&l.pessoa_id===pessoaId&&String(l.romaneio||'')===numero))throw Error('Já existe este romaneio na conta do cliente. Confira o lançamento existente.');
+     const data=insumo(p)?p.data:(p.data_entrega||p.data);
+     if(!/^\d{4}-\d{2}-\d{2}$/.test(String(data||'')))throw Error('Confira a data do pedido antes de lançar.');
+     registros.push({id:'pedido-'+p.id,pessoa_id:pessoaId,tipo:'mov',data,valor:Number(p.total),desc:(insumo(p)?'Insumos ':'Romaneio ')+numero,romaneio:insumo(p)?'':numero,obs:p.observacao||'',origem_pedido:key,itens_origem:p.itens||[]});
+     estado.integracaoPedidos=estado.integracaoPedidos||{};
+     estado.integracaoPedidos[key]={lancamento_id:'pedido-'+p.id,pessoa_id:pessoaId,origem:JSON.stringify(resumo(p)),criado_em:new Date().toISOString()};
+     const stamp=new Date(Math.max(Date.now(),(Date.parse(row.updated_at)||0)+1)).toISOString();
+     let q=financeiro.from('app_state').update({data:estado,updated_at:stamp}).eq('id','principal');
+     q=row.updated_at===null?q.is('updated_at',null):q.eq('updated_at',row.updated_at);
+     const r=await q.select('updated_at').maybeSingle();
+     if(r.error)throw r.error;
+     if(r.data){gravado=true;break}
+    }
+    if(!gravado)throw Error('O financeiro recebeu alterações simultâneas. Tente novamente.');
+    salvo=true;
+    let q=db.from('pedidos').update({status:alvo}).eq('id',p.id).eq('cliente',p.cliente).eq('total',p.total);
+    q=p.status==null?q.is('status',null):q.eq('status',p.status);
+    const r=await q.select('id').single();if(r.error)throw r.error;
+   }
+   el('envioDiretoMensagem').textContent='Lançamento confirmado na conta corrente do cliente.';
+   origem=null;await carregarPedidos();
+   if(pedidoAbertoId)abrirModal(pedidoAbertoId);
+  }catch(e){
+   el('envioDiretoMensagem').textContent=(salvo?'O débito já foi salvo. Tente concluir a marcação sem criar outro lançamento. ':'Não concluído. Se houve falha de conexão, tente novamente por este botão; a referência do pedido evita repetir o débito. ')+e.message;
+  }finally{bloquear(false);el('envioDiretoConfirmar').disabled=!origem}
+ };
+})();
+</script></body></html>
