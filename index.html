@@ -378,7 +378,7 @@ function dbParaPedido(row){
  const itens = Array.isArray(row.itens) ? row.itens : (
   row.chapa ? [{
     chapa: row.chapa,
-    quantidade: Number(row.quantidade)||1,
+    quantidade: Number(row.quantidade)||0,
     largura: Number(row.largura)||0,
     altura: Number(row.altura)||0,
     valorM2: Number(row.valor_m2)||0,
@@ -436,7 +436,7 @@ function criarItem(id,dados={}){
  </div>`;
  document.getElementById("itens").appendChild(div);
  div.querySelector(".chapa").value=dados.chapa||"";
- div.querySelector(".quantidade").value=dados.quantidade||"1";
+ div.querySelector(".quantidade").value=dados.quantidade??"1";
  div.querySelector(".largura").value=dados.largura?String(dados.largura).replace(".",","):"";
  div.querySelector(".altura").value=dados.altura?String(dados.altura).replace(".",","):"";
  div.querySelector(".valorM2").value=dados.valorM2?String(dados.valorM2).replace(".",","):"";
@@ -447,7 +447,7 @@ function removerChapa(id){if(document.querySelectorAll("#itens .item").length<=1
 function calcular(){
  let subtotal=0;
  document.querySelectorAll("#itens .item").forEach(item=>{
-  const qtd=numero(item.querySelector(".quantidade").value)||1,larg=numero(item.querySelector(".largura").value),alt=numero(item.querySelector(".altura").value),valor=numero(item.querySelector(".valorM2").value);
+  const qtd=numero(item.querySelector(".quantidade").value),larg=numero(item.querySelector(".largura").value),alt=numero(item.querySelector(".altura").value),valor=numero(item.querySelector(".valorM2").value);
   const m2=qtd*larg*alt,total=m2*valor; subtotal+=total;
   item.querySelector(".m2").textContent=m2.toFixed(2).replace(".",",")+" m²";
   item.querySelector(".totalItem").textContent=moeda(total);
@@ -456,7 +456,7 @@ function calcular(){
  document.getElementById("subtotalPedido").textContent=moeda(subtotal);
  document.getElementById("totalPedido").textContent=moeda(subtotal+frete);
 }
-function coletarItens(){return [...document.querySelectorAll("#itens .item")].map(item=>{const quantidade=numero(item.querySelector(".quantidade").value)||1,largura=numero(item.querySelector(".largura").value),altura=numero(item.querySelector(".altura").value),valorM2=numero(item.querySelector(".valorM2").value);const m2=quantidade*largura*altura,total=m2*valorM2;return {chapa:item.querySelector(".chapa").value.trim(),quantidade,largura,altura,valorM2,m2,total};});}
+function coletarItens(){return [...document.querySelectorAll("#itens .item")].map(item=>{const quantidade=numero(item.querySelector(".quantidade").value),largura=numero(item.querySelector(".largura").value),altura=numero(item.querySelector(".altura").value),valorM2=numero(item.querySelector(".valorM2").value);const m2=quantidade*largura*altura,total=m2*valorM2;return {chapa:item.querySelector(".chapa").value.trim(),quantidade,largura,altura,valorM2,m2,total};});}
 async function salvarPedido(){
  const campoCliente=document.getElementById("cliente"),campoObservacao=document.getElementById("observacao"),campoDia=document.getElementById("diaEntrega"),campoPeriodo=document.getElementById("periodoEntrega"),campoFrete=document.getElementById("fretePedido"),campoEdicao=document.getElementById("editandoId"),botao=document.getElementById("btnSalvar");
  let cliente=campoCliente.value.replace(/\s+/g," ").trim(); if(!cliente){alert("Escolha o cliente.");return}
@@ -567,7 +567,7 @@ function renderInsumos(){
 async function alterarStatusInsumo(id,status){const p=pedidosInsumos.find(x=>x.id===id);if(!p)return;const dataPagamento=status==="pago"?(p.dataPagamento||dataISO()):null;const {error}=await db.from("pedidos").update({status:"insumo_"+status,entregue:status==="pago",data_entrega:dataPagamento}).eq("id",id);if(error){alert("Erro ao alterar status do pagamento: "+error.message);return}await carregarPedidos();renderInsumos()}
 async function excluirInsumo(id){if(!confirm("Excluir esta venda de insumos?"))return;const {error}=await db.from("pedidos").delete().eq("id",id);if(error){alert("Erro ao excluir: "+error.message);return}await carregarPedidos();renderInsumos()}
 function baixarPDFInsumo(id){const p=pedidosInsumos.find(x=>x.id===id);if(!p)return;const {jsPDF}=window.jspdf,doc=new jsPDF();let y=16;const status=p.status==="pago"?"Pago":p.status==="financeiro"?"Lançado no financeiro":p.status==="cancelado"?"Cancelado":"Pendente de pagamento";doc.setFont("helvetica","bold");doc.setFontSize(16);doc.text("Empório - Venda de Insumos",15,y);y+=10;doc.setFontSize(15);doc.text("Cliente: "+p.cliente,15,y);y+=8;doc.setFontSize(10);doc.setFont("helvetica","normal");doc.text("Venda: "+dataBR(p.data)+" | Pedido nº "+(p.numero||p.id)+" | Status: "+status,15,y);y+=7;if(p.dataPagamento){doc.text("Pagamento recebido em: "+dataBR(p.dataPagamento),15,y);y+=7}if(p.observacao){y=textoPDF(doc,"Observação: "+p.observacao,15,y,180);y+=3}y+=3;doc.setFont("helvetica","bold");doc.text("Insumo",15,y);doc.text("Qtd / Un.",105,y);doc.text("Vlr unit.",145,y);doc.text("Total",180,y);y+=5;doc.line(15,y,200,y);y+=7;doc.setFont("helvetica","normal");(p.itens||[]).forEach(i=>{if(y>270){doc.addPage();y=18}doc.text(String(i.nome||"").slice(0,42),15,y);doc.text(`${i.quantidade} ${i.unidade}`,105,y);doc.text(moeda(i.valorUnitario).replace("R$",""),145,y);doc.text(moeda(i.total).replace("R$",""),180,y);y+=8});y+=5;doc.line(130,y,200,y);y+=8;doc.setFont("helvetica","bold");doc.text("Total: "+moeda(p.total),140,y);doc.save("insumos-"+(p.numero||p.id)+"-"+textoArquivo(p.cliente)+".pdf")}
-function abrirModal(id){pedidoAbertoId=id; const p=pedidos.find(x=>x.id===id); if(!p)return;const entrega=partesEntrega(p.dia);modalCliente.textContent=p.cliente;modalNumero.textContent="Pedido nº "+(p.numero||p.id);modalDia.textContent=entrega.periodo==="A definir"?entrega.dia:`${entrega.dia} - ${entrega.periodo}`;modalStatus.textContent=p.entregue?"Entregue":(p.status==="previo"?"Prévio":"Pendente");modalStatus.textContent+=p.status==="chapa_pago"?" • Pago":p.status==="romaneio_impresso"?" • Lançado no financeiro":"";modalStatus.className="pill"+(p.status==="previo"?" status-previo":"");modalObs.textContent=p.observacao?"Obs: "+p.observacao:"";modalTrocarDia.value=entrega.dia;modalTrocarPeriodo.value=entrega.periodo;modalItens.innerHTML=(p.itens||[]).map((i,idx)=>`<div class="detail-item"><strong>${i.chapa||"Sem nome"}</strong><br>Qtd: ${i.quantidade||1} | Medida: ${String(i.largura).replace(".",",")} x ${String(i.altura).replace(".",",")} = ${Number(i.m2||0).toFixed(2).replace(".",",")} m²<br>Valor m²: ${moeda(i.valorM2)}<br>Total: <strong>${moeda(i.total||0)}</strong></div>`).join("");modalTotal.textContent="Subtotal: "+moeda(p.subtotal||0)+" | Frete: "+moeda(p.frete||0)+" | Total: "+moeda(p.total||0);modalBg.style.display="flex";}
+function abrirModal(id){pedidoAbertoId=id; const p=pedidos.find(x=>x.id===id); if(!p)return;const entrega=partesEntrega(p.dia);modalCliente.textContent=p.cliente;modalNumero.textContent="Pedido nº "+(p.numero||p.id);modalDia.textContent=entrega.periodo==="A definir"?entrega.dia:`${entrega.dia} - ${entrega.periodo}`;modalStatus.textContent=p.entregue?"Entregue":(p.status==="previo"?"Prévio":"Pendente");modalStatus.textContent+=p.status==="chapa_pago"?" • Pago":p.status==="romaneio_impresso"?" • Lançado no financeiro":"";modalStatus.className="pill"+(p.status==="previo"?" status-previo":"");modalObs.textContent=p.observacao?"Obs: "+p.observacao:"";modalTrocarDia.value=entrega.dia;modalTrocarPeriodo.value=entrega.periodo;modalItens.innerHTML=(p.itens||[]).map((i,idx)=>`<div class="detail-item"><strong>${i.chapa||"Sem nome"}</strong><br>Qtd: ${i.quantidade??0} | Medida: ${String(i.largura).replace(".",",")} x ${String(i.altura).replace(".",",")} = ${Number(i.m2||0).toFixed(2).replace(".",",")} m²<br>Valor m²: ${moeda(i.valorM2)}<br>Total: <strong>${moeda(i.total||0)}</strong></div>`).join("");modalTotal.textContent="Subtotal: "+moeda(p.subtotal||0)+" | Frete: "+moeda(p.frete||0)+" | Total: "+moeda(p.total||0);modalBg.style.display="flex";}
 
 let salvandoPagoChapas=false;
 async function marcarPagoChapas(id,botao){
@@ -590,7 +590,16 @@ function fecharModal(){modalBg.style.display="none";pedidoAbertoId=null}
 async function salvarEntregaModal(){if(!pedidoAbertoId)return;const {error}=await db.from("pedidos").update({dia:valorEntrega(modalTrocarDia.value,modalTrocarPeriodo.value)}).eq("id",pedidoAbertoId);if(error){alert("Erro ao trocar entrega: "+error.message);return}await carregarPedidos(); abrirModal(pedidoAbertoId);}
 modalTrocarDia.addEventListener("change",salvarEntregaModal)
 modalTrocarPeriodo.addEventListener("change",salvarEntregaModal)
-async function marcarEntregueModal(){if(!pedidoAbertoId)return;const p=pedidos.find(x=>x.id===pedidoAbertoId); if(!p)return;const novo=!p.entregue;const dataEntregaFixa=p.dataEntrega||dataISO();const {error}=await db.from("pedidos").update({entregue:novo,data_entrega:dataEntregaFixa,status:["romaneio_impresso","chapa_pago"].includes(p.status)?p.status:"confirmado"}).eq("id",pedidoAbertoId);if(error){alert("Erro ao alterar status: "+error.message);return}await carregarPedidos(); abrirModal(pedidoAbertoId);}
+function pendenciasEntregaChapas(p){
+ if(!Array.isArray(p.itens)||!p.itens.length)return ['O pedido está sem chapas.'];
+ const positivo=v=>{const n=typeof v==='number'?v:Number(String(v??'').trim().replace(',','.'));return Number.isFinite(n)&&n>0};
+ return p.itens.flatMap((item,idx)=>{
+  const i=item||{},campos=[];
+  for(const [key,label] of [['quantidade','quantidade'],['largura','largura'],['altura','altura'],['m2','metragem (m²)'],['valorM2','valor por m²'],['total','total da chapa']])if(!positivo(i[key]))campos.push(label);
+  return campos.length?[`Item ${idx+1} — ${i.chapa||'Sem nome'}: ${campos.join(', ')}.`]:[];
+ });
+}
+async function marcarEntregueModal(){if(!pedidoAbertoId)return;const p=pedidos.find(x=>x.id===pedidoAbertoId); if(!p)return;const novo=!p.entregue;if(novo){const pendencias=pendenciasEntregaChapas(p);if(pendencias.length){alert("Não é possível marcar como entregue."+String.fromCharCode(10,10)+"Corrija os campos zerados, vazios ou inválidos:"+String.fromCharCode(10)+pendencias.join(String.fromCharCode(10))+String.fromCharCode(10,10)+"Clique em Editar, corrija e salve o pedido antes de marcar como entregue.");return}}const dataEntregaFixa=p.dataEntrega||dataISO();const {error}=await db.from("pedidos").update({entregue:novo,data_entrega:dataEntregaFixa,status:["romaneio_impresso","chapa_pago"].includes(p.status)?p.status:"confirmado"}).eq("id",pedidoAbertoId);if(error){alert("Erro ao alterar status: "+error.message);return}await carregarPedidos(); abrirModal(pedidoAbertoId);}
 function editarPedidoModal(){const p=pedidos.find(x=>x.id===pedidoAbertoId);if(!p)return;const entrega=partesEntrega(p.dia);fecharModal();editandoId.value=p.id;formTitulo.textContent="Editando pedido";btnSalvar.textContent="Salvar alteração";btnCancelarEdicao.style.display="block";cliente.value=p.cliente;observacao.value=p.observacao||"";diaEntrega.value=entrega.dia;periodoEntrega.value=entrega.periodo;fretePedido.value=p.frete?String(p.frete).replace(".",","):"";itens.innerHTML="";p.itens.forEach(i=>criarItem(itemId++,i));mostrarAba("pedidos");scrollTo({top:0,behavior:"smooth"})}
 async function excluirPedidoModal(){if(!pedidoAbertoId)return;if(!confirm("Excluir este pedido?"))return;const {error}=await db.from("pedidos").delete().eq("id",pedidoAbertoId);if(error){alert("Erro ao excluir pedido: "+error.message);return}fecharModal(); await carregarPedidos();}
 function renderEntregas(){entregas.innerHTML=""; dias.forEach(dia=>{const arrDia=pedidos.filter(p=>diaPedido(p)===dia&&!p.entregue&&p.status!=="previo");const box=document.createElement("div");box.className="day";box.innerHTML=`<div class="day-head"><h3>${dia}</h3><span class="count">${arrDia.length}</span></div>`;if(!arrDia.length)box.innerHTML+=`<p class="muted">Sem entregas</p>`;periodos.forEach(periodo=>{const arr=arrDia.filter(p=>periodoPedido(p)===periodo);if(!arr.length)return;box.innerHTML+=`<div class="period-title">${periodo}</div>`;arr.forEach(p=>{box.innerHTML+=`<button class="delivery" style="overflow-wrap:anywhere" onclick="abrirModal(${p.id})">#${escaparHTML(p.numero||p.id)} - ${escaparHTML(p.cliente)} - ${moeda(p.total)}${String(p.observacao||"").trim()?` <span style="font-weight:normal;white-space:pre-wrap">— Obs: ${escaparHTML(p.observacao)}</span>`:""}</button>`})});entregas.appendChild(box)})}
